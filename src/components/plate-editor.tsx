@@ -1,9 +1,16 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { usePathname } from 'next/navigation';
 import { cn } from '@udecode/cn';
 import { CommentsProvider } from '@udecode/plate-comments';
-import { Plate } from '@udecode/plate-common';
+import { Plate, Value } from '@udecode/plate-common';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -20,21 +27,31 @@ import { FloatingToolbar } from '@/components/plate-ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/components/plate-ui/floating-toolbar-buttons';
 import { MentionCombobox } from '@/components/plate-ui/mention-combobox';
 
-export default function PlateEditor() {
-  const containerRef = useRef(null);
+import { useEditorContext } from './context/editor';
 
-  const initialValue = [
+export default function PlateEditor() {
+  const { setBlocks, blocks } = useEditorContext();
+  const containerRef = useRef(null);
+  const path = usePathname();
+  const id = path.split('/').pop();
+  const iv = [
     {
       id: '1',
       type: ELEMENT_PARAGRAPH,
-      children: [{ text: 'Hello, World!' }],
+      children: [{ text: 'hello' }],
     },
   ];
 
   return (
     <DndProvider backend={HTML5Backend}>
       <CommentsProvider users={commentsUsers} myUserId={myUserId}>
-        <Plate plugins={plugins} initialValue={initialValue}>
+        <Plate
+          plugins={plugins}
+          initialValue={blocks}
+          onChange={(b) => {
+            setBlocks(b);
+          }}
+        >
           <div
             ref={containerRef}
             className={cn(

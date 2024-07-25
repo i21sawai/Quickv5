@@ -38,6 +38,7 @@ import {
 import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin, MARK_COMMENT } from '@udecode/plate-comments';
 import {
+  createPluginFactory,
   createPlugins,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
@@ -165,6 +166,13 @@ const resetBlockTypesCodeBlockRule = {
   defaultType: ELEMENT_PARAGRAPH,
   onReset: unwrapCodeBlock,
 };
+
+// const updatePlugin = createPluginFactory({
+//   key: 'update',
+//   handlers: {
+//     onChange: (editor) => (value) => {
+
+//     }
 
 export const plugins = createPlugins(
   [

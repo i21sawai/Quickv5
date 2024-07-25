@@ -11,6 +11,10 @@ import '@/styles/globals.css';
 
 import { Metadata, Viewport } from 'next';
 
+import AuthProvider from '@/components/context/auth';
+import AuthRedirect from '@/components/context/auth-redirect';
+import { EditorContextProvider } from '@/components/context/editor';
+
 export const metadata: Metadata = {
   title: {
     default: siteConfig.name,
@@ -47,19 +51,25 @@ export default function RootLayout({ children }: RootLayoutProps) {
             fontSans.variable
           )}
         >
-          <ThemeProvider attribute="class" defaultTheme="light">
-            <TooltipProvider
-              disableHoverableContent
-              delayDuration={500}
-              skipDelayDuration={0}
-            >
-              <div className="relative flex min-h-screen flex-col">
-                <SiteHeader />
-                <div className="flex-1">{children}</div>
-              </div>
-              <TailwindIndicator />
-            </TooltipProvider>
-          </ThemeProvider>
+          <AuthProvider>
+            <AuthRedirect>
+              <ThemeProvider attribute="class" defaultTheme="light">
+                <EditorContextProvider>
+                  <TooltipProvider
+                    disableHoverableContent
+                    delayDuration={500}
+                    skipDelayDuration={0}
+                  >
+                    <div className="relative flex min-h-screen flex-col">
+                      <SiteHeader />
+                      <div className="flex-1">{children}</div>
+                    </div>
+                    <TailwindIndicator />
+                  </TooltipProvider>
+                </EditorContextProvider>
+              </ThemeProvider>
+            </AuthRedirect>
+          </AuthProvider>
         </body>
       </html>
     </>

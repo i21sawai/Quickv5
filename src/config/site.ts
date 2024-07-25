@@ -1,13 +1,16 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: 'Next.js',
-  description:
-    'Rich-text editor components built with Radix UI and Tailwind CSS.',
+  name: '精密採点Web試験',
+  description: 'Web試験のためのサイトです。',
   mainNav: [
     {
-      title: 'Home',
-      href: '/',
+      title: '作成',
+      href: '/edit',
+    },
+    {
+      title: '共有',
+      href: '/exam',
     },
   ],
   links: {

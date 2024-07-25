@@ -6,6 +6,8 @@ import { buttonVariants } from '@/components/plate-ui/button';
 import { MainNav } from '@/components/site/main-nav';
 import { ThemeToggle } from '@/components/site/theme-toggle';
 
+import LoginBtn from '../atoms/login-btn';
+
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background">
@@ -13,36 +15,7 @@ export function SiteHeader() {
         <MainNav items={siteConfig.mainNav} />
         <div className="flex flex-1 items-center justify-end space-x-4">
           <nav className="flex items-center space-x-1">
-            <Link
-              href={siteConfig.links.github}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <div
-                className={buttonVariants({
-                  size: 'sm',
-                  variant: 'ghost',
-                })}
-              >
-                <Icons.gitHub className="size-4" />
-                <span className="sr-only">GitHub</span>
-              </div>
-            </Link>
-            <Link
-              href={siteConfig.links.twitter}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <div
-                className={buttonVariants({
-                  size: 'sm',
-                  variant: 'ghost',
-                })}
-              >
-                <Icons.twitter className="size-5 fill-current" />
-                <span className="sr-only">Twitter</span>
-              </div>
-            </Link>
+            <LoginBtn />
             <ThemeToggle />
           </nav>
         </div>
