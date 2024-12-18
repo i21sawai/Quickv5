@@ -28,10 +28,7 @@ export default function IndexPage() {
         id: e.id,
         type: e.type,
         title: e.title,
-        answers:
-          e.type === 'matrix' || e.type === 'radio'
-            ? [JSON.stringify(e.answers)]
-            : e.answers,
+        answers: e.answers,
       };
     });
     const res: Response = {

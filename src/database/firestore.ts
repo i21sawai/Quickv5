@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
-import { firestore } from 'firebase-admin';
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
 
 config();
 
@@ -15,10 +15,11 @@ if (!getApps().length) {
       privateKey: process.env.SA_PRIVATE_KEY,
     }),
   });
+  const db = getFirestore();
+  db.settings({ ignoreUndefinedProperties: true });
 }
 
-export const db = firestore();
-
+export const db = getFirestore();
 export const fs_e = db.collection('Exam').doc('exam').collection('exams');
 
 // export const fs_a = db

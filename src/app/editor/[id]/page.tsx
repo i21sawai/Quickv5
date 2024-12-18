@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import { siteConfig } from '@/config/site';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useEditorContext } from '@/components/context/editor';
 import { FormRenderer } from '@/components/oarganisms/formRenderer';
@@ -10,7 +11,8 @@ import PlateEditor from '@/components/plate-editor';
 import { buttonVariants } from '@/components/plate-ui/button';
 
 export default function IndexPage() {
-  const { blocks, setBlocks, elements, ready } = useEditorContext();
+  const { blocks, setBlocks, elemSave, setElemSave, ready } =
+    useEditorContext();
 
   return (
     <section className="container grid items-center gap-6 pb-8 pt-6 md:py-10">
@@ -21,6 +23,12 @@ export default function IndexPage() {
         <p className="max-w-[700px] text-lg text-muted-foreground">
           Markdown記法を元にした記法を使って、試験問題を作成することができます。
         </p>
+        <Button asChild>
+          <Link href={`/exam/${elemSave?.id}`}>回答用ページ</Link>
+        </Button>
+        <Button asChild>
+          <Link href={`/result/${elemSave?.id}`}>回答結果を見る</Link>
+        </Button>
       </div>
 
       <div className="max-w-[1336px] flex">
@@ -31,7 +39,7 @@ export default function IndexPage() {
           {/* <h1 className="text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
             プレビュー
           </h1> */}
-          <FormRenderer />
+          <FormRenderer elemSave={elemSave} setElemSave={setElemSave} />
         </div>
       </div>
     </section>
