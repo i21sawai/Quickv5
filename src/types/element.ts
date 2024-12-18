@@ -1,4 +1,4 @@
-import { TElement, Value } from '@udecode/plate-common';
+import { TElement } from '@udecode/plate-common';
 
 export type ElemType = 'text' | 'paragraph' | 'matrix' | 'radio' | undefined;
 export type Element = {

@@ -1,16 +1,7 @@
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { Plate } from '@udecode/plate-common';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { createEditor } from 'slate';
-import { Editable, Slate, withReact } from 'slate-react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { Element, ElementSaveData } from '@/types/element';
-import { plugins } from '@/lib/plate/plate-plugins';
+import { ElementSaveData } from '@/types/element';
 
-import { useEditorContext } from '../context/editor';
-import { Editor } from '../plate-ui/editor';
-import { Badge } from '../ui/badge';
 import { FormElemRenderer } from './formElemRenderer';
 
 export type FormRendererProps = {
@@ -53,14 +44,14 @@ export const FormRenderer = ({ elemSave, setElemSave }: FormRendererProps) => {
   return (
     <div className="flex flex-col gap-4">
       {
-        <div className="flex mb-4">
-          <div className="flex flex-col gap-2 w-full">
+        <div className="mb-4 flex">
+          <div className="flex w-full flex-col gap-2">
             <h1 className="scroll-m-20 pb-2 text-4xl font-bold tracking-tight first:mt-0">
               {elemSave?.title}
             </h1>
           </div>
 
-          <div className="text-sm text-muted-foreground w-16">
+          <div className="w-16 text-sm text-muted-foreground">
             {totalPoint}点
           </div>
         </div>

@@ -1,13 +1,7 @@
 import { AutoformatRule } from '@udecode/plate-autoformat';
 import { isBlock, setNodes } from '@udecode/plate-common';
 import { ListStyleType, toggleIndentList } from '@udecode/plate-indent-list';
-import {
-  ELEMENT_LI,
-  ELEMENT_OL,
-  ELEMENT_TODO_LI,
-  ELEMENT_UL,
-  TTodoListItemElement,
-} from '@udecode/plate-list';
+import { ELEMENT_TODO_LI, TTodoListItemElement } from '@udecode/plate-list';
 
 export const autoformatIndentLists: AutoformatRule[] = [
   {

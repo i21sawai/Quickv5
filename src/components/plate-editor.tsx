@@ -1,16 +1,10 @@
 'use client';
 
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@udecode/cn';
 import { CommentsProvider } from '@udecode/plate-comments';
-import { Plate, Value } from '@udecode/plate-common';
+import { Plate } from '@udecode/plate-common';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';

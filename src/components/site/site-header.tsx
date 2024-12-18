@@ -1,8 +1,4 @@
-import Link from 'next/link';
-
 import { siteConfig } from '@/config/site';
-import { Icons } from '@/components/icons';
-import { buttonVariants } from '@/components/plate-ui/button';
 import { MainNav } from '@/components/site/main-nav';
 import { ThemeToggle } from '@/components/site/theme-toggle';
 

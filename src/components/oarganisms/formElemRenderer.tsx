@@ -1,4 +1,4 @@
-import { Plate, setElements } from '@udecode/plate-common';
+import { Plate } from '@udecode/plate-common';
 
 import { Element } from '@/types/element';
 import { plugins } from '@/lib/plate/plate-plugins';
@@ -18,9 +18,9 @@ export const FormElemRenderer = ({
 }) => {
   return (
     <div className="flex flex-col">
-      <div className="flex mb-4">
-        <div className="flex flex-col gap-2 w-full">
-          <h2 className="scroll-m-20 border-b pb-2 text-xl font-semibold tracking-tight first:mt-0 w-full">
+      <div className="mb-4 flex">
+        <div className="flex w-full flex-col gap-2">
+          <h2 className="w-full scroll-m-20 border-b pb-2 text-xl font-semibold tracking-tight first:mt-0">
             問題{count++}. {elem.title}
           </h2>
           {elem.tags.length >= 1 && (
@@ -34,7 +34,7 @@ export const FormElemRenderer = ({
           )}
         </div>
 
-        <div className="text-sm text-muted-foreground w-16">
+        <div className="w-16 text-sm text-muted-foreground">
           {elem?.point}点
         </div>
       </div>
@@ -47,7 +47,7 @@ export const FormElemRenderer = ({
               readOnly
               key={count}
             >
-              <Editor className="p-0 border-none" readOnly />
+              <Editor className="border-none p-0" readOnly />
             </Plate>
           )}
 

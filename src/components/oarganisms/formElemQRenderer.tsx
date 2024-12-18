@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -68,11 +67,11 @@ export const FormElemQRenderer = ({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="min-w-20 max-w-20 w-20">問題</TableHead>
+              <TableHead className="w-20 min-w-20 max-w-20">問題</TableHead>
               {element.options.map((option, i) => (
                 <TableHead
                   className={cn(
-                    'text-center min-w-12 max-w-12 w-12 md:min-w-28 md:max-w-28 md:w-28'
+                    'w-12 min-w-12 max-w-12 text-center md:w-28 md:min-w-28 md:max-w-28'
                   )}
                   key={i}
                 >
@@ -96,7 +95,7 @@ export const FormElemQRenderer = ({
                       answers[i] = [parseInt(value)];
                       setElement({ ...element, answers });
                     }}
-                    className="flex justify-end px-3 gap-[48px] md:px-8 md:gap-[96px]"
+                    className="flex justify-end gap-[48px] px-3 md:gap-[96px] md:px-8"
                   >
                     {element.options.map((_, j) => (
                       <RadioGroupItem key={j} value={`${j + 1}`} />

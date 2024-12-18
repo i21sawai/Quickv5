@@ -308,9 +308,9 @@ export default function Result() {
   };
 
   return (
-    <div className="flex justify-center max-w-full w-full min-w-0">
-      <div className="flex flex-col max-w-screen-sm w-full p-0 md:p-16 gap-8">
-        <div className="flex flex-col gap-2 w-full">
+    <div className="flex w-full min-w-0 max-w-full justify-center">
+      <div className="flex w-full max-w-screen-sm flex-col gap-8 p-0 md:p-16">
+        <div className="flex w-full flex-col gap-2">
           <h1 className="scroll-m-20 pb-2 text-4xl font-bold tracking-tight first:mt-0">
             {elemSave?.title}
           </h1>

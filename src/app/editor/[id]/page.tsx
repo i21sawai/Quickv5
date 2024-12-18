@@ -2,13 +2,10 @@
 
 import Link from 'next/link';
 
-import { siteConfig } from '@/config/site';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useEditorContext } from '@/components/context/editor';
 import { FormRenderer } from '@/components/oarganisms/formRenderer';
 import PlateEditor from '@/components/plate-editor';
-import { buttonVariants } from '@/components/plate-ui/button';
 
 export default function IndexPage() {
   const { blocks, setBlocks, elemSave, setElemSave, ready } =
@@ -31,7 +28,7 @@ export default function IndexPage() {
         </Button>
       </div>
 
-      <div className="max-w-[1336px] flex">
+      <div className="flex max-w-[1336px]">
         <div className="w-1/2 rounded-lg border bg-background shadow">
           {ready && <PlateEditor />}
         </div>

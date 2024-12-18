@@ -16,7 +16,7 @@ import { Toolbar } from './toolbar';
 export const FloatingToolbar = withRef<
   typeof Toolbar,
   {
-    portalElement?: Element
+    portalElement?: Element;
     state?: FloatingToolbarState;
   }
 >(({ state, portalElement, children, ...props }, componentRef) => {

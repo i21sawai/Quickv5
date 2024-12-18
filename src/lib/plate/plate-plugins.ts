@@ -38,7 +38,6 @@ import {
 import { createComboboxPlugin } from '@udecode/plate-combobox';
 import { createCommentsPlugin, MARK_COMMENT } from '@udecode/plate-comments';
 import {
-  createPluginFactory,
   createPlugins,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,

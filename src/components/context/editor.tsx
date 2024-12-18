@@ -6,13 +6,10 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useState,
 } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { useRouter } from 'next/router';
-import { makeid } from '@/utils/str';
-import { PlateStoreState, TNode, TText, Value } from '@udecode/plate-common';
+import { usePathname } from 'next/navigation';
+import { Value } from '@udecode/plate-common';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
 import { Element, ElementSaveData } from '@/types/element';

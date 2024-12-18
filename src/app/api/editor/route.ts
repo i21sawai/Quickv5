@@ -1,9 +1,7 @@
-import fs from 'fs';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
 import { NextRequest, NextResponse } from 'next/server';
 import { bucket } from '@/database/storage';
-import { makeid } from '@/utils/str';
 
 const pump = promisify(pipeline);
 

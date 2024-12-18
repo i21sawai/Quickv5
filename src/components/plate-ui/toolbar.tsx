@@ -27,7 +27,7 @@ export const ToolbarLink = withCn(
 
 export const ToolbarSeparator = withCn(
   ToolbarPrimitive.Separator,
-  'my-1 w-[1px] shrink-0 bg-border'
+  'my-1 w-px shrink-0 bg-border'
 );
 
 const toolbarButtonVariants = cva(
