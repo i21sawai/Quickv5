@@ -5,12 +5,12 @@ export const siteConfig = {
   description: 'Web試験のためのサイトです。',
   mainNav: [
     {
-      title: '作成',
-      href: '/edit',
+      title: '回答',
+      href: '/',
     },
     {
-      title: '共有',
-      href: '/exam',
+      title: '作成',
+      href: '/editor',
     },
   ],
   links: {

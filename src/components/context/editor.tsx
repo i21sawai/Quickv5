@@ -8,7 +8,7 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { usePathname } from 'next/navigation';
+import { notFound, usePathname } from 'next/navigation';
 import { Value } from '@udecode/plate-common';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
@@ -67,7 +67,8 @@ export const EditorContextProvider = ({
   //     return JSON.parse(blocks);
   //   }
   //   return initialValue;
-  // });f
+  // });
+
   useEffect(() => {
     console.log(path, id);
     const f = async () => {
@@ -256,7 +257,7 @@ export const EditorContextProvider = ({
         console.log('uploading');
         const res = await (
           await fetch('/api/editor', {
-            method: 'POST',
+            method: 'PUT',
             body: formData,
           })
         ).json();

@@ -1,7 +1,7 @@
+import { Noto_Sans_JP } from 'next/font/google';
 import { cn } from '@udecode/cn';
 
 import { siteConfig } from '@/config/site';
-import { fontSans } from '@/lib/fonts';
 import { TooltipProvider } from '@/components/plate-ui/tooltip';
 import { SiteHeader } from '@/components/site/site-header';
 import { TailwindIndicator } from '@/components/site/tailwind-indicator';
@@ -39,6 +39,11 @@ interface RootLayoutProps {
   children: React.ReactNode;
 }
 
+const noto = Noto_Sans_JP({
+  variable: '--font-noto',
+  subsets: ['latin'],
+});
+
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <>
@@ -46,9 +51,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <head />
         <body
           className={cn(
-            'min-h-screen bg-background font-sans antialiased',
-            '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10',
-            fontSans.variable
+            `min-h-screen bg-background ${noto.className} antialiased`,
+            '[&_.slate-selected]:!bg-primary/20 [&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
           )}
         >
           <AuthProvider>

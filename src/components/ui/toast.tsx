@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import * as ToastPrimitives from '@radix-ui/react-toast';
 import { cva } from 'class-variance-authority';
@@ -83,7 +85,7 @@ const ToastClose = React.forwardRef<
     toast-close=""
     {...props}
   >
-    <X className="size-4" />
+    <X className="h-4 w-4" />
   </ToastPrimitives.Close>
 ));
 ToastClose.displayName = ToastPrimitives.Close.displayName;

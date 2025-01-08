@@ -16,8 +16,8 @@ const handler = NextAuth({
       // e.g. domain, username, password, 2FA token, etc.
       // You can pass any HTML attribute to the <input> tag through the object.
       credentials: {
-        username: { label: 'Username', type: 'text', placeholder: 'jsmith' },
-        password: { label: 'Password', type: 'password' },
+        username: { label: '名前', type: 'text' },
+        password: { label: 'パスワード', type: 'password' },
       },
       async authorize(credentials, req) {
         // Add logic here to look up the user from the credentials supplied
@@ -26,7 +26,6 @@ const handler = NextAuth({
           name: credentials?.username!,
           id: credentials?.username!,
         };
-        //{ id: '1', name: 'J Smith', email: 'jsmith@example.com' };
         if (user) {
           // Any object returned will be saved in `user` property of the JWT
           return user;

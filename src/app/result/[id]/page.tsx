@@ -1,14 +1,18 @@
 'use client';
 
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
+  Area,
+  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
   LabelList,
   PolarAngleAxis,
   PolarGrid,
+  PolarRadiusAxis,
   Radar,
   RadarChart,
   XAxis,
@@ -141,6 +145,7 @@ export default function Result() {
 
   type Overview = {
     pointDist: number[];
+    possiblePoint: number;
     radar: { [key: string]: number };
     radarMax: { [key: string]: number };
   };
@@ -150,6 +155,7 @@ export default function Result() {
       pointDist: new Array(data.data.userIdList.length).fill(0),
       radar: {},
       radarMax: {},
+      possiblePoint: 0,
     };
     data.data.answersList.forEach((answer) => {
       let id = answer.id;
@@ -199,6 +205,7 @@ export default function Result() {
       question?.tags.forEach((tag, i) => {
         result.radar[tag] = average;
         result.radarMax[tag] = question.point;
+        result.possiblePoint += question.point;
       });
     });
     return result;
@@ -212,57 +219,77 @@ export default function Result() {
       overview.pointDist.reduce((a, b) => a + (b - average) ** 2, 0) /
         overview.pointDist.length
     );
-    const chartConfig = {
-      pointDist: {
-        label: 'point',
+    const n = 10;
+    let pointHistogram = new Array(n + 1).fill(0);
+    overview.pointDist.forEach((point) => {
+      pointHistogram[
+        Math.min(Math.floor((point / overview.possiblePoint) * n) + 1, n)
+      ]++;
+    });
+    pointHistogram = pointHistogram.map((count, i) => ({
+      point: `${(overview.possiblePoint / n) * i}`,
+      count,
+    }));
+    pointHistogram.reverse();
+    const areaConfig = {
+      count: {
+        label: '人数',
         color: 'hsl(var(--chart-1))',
       },
-      radar: {
-        label: 'point',
-        color: 'hsl(var(--chart-1))',
-      },
+      // point: {
+      //   label: '点数',
+      //   color: 'hsl(var(--chart-1))',
+      // },
     } satisfies ChartConfig;
     //radar chart
     const radarData = Object.keys(overview.radar).map((key) => ({
       tag: key,
-      point: overview.radar[key] / overview.radarMax[key],
+      point: (overview.radar[key] / overview.radarMax[key]) * 100,
     }));
     const radarConfig = {
-      radar: {
-        label: 'radar',
+      point: {
+        label: '正解率',
         color: 'hsl(var(--chart-1))',
       },
     } satisfies ChartConfig;
+    const possiblePointStep = overview.possiblePoint / n;
 
     return (
       <div>
         <h2>平均{average}点</h2>
         <h2>標準偏差{sd}</h2>
-        <ChartContainer className="w-96" config={chartConfig}>
-          <BarChart
+        <ChartContainer className="w-96" config={areaConfig}>
+          <AreaChart
             accessibilityLayer
-            data={overview.pointDist.map((point, i) => ({ id: i, point }))}
+            data={pointHistogram}
+            margin={{
+              left: 12,
+              right: 12,
+            }}
           >
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="id"
+              dataKey="point"
               tickLine={false}
               tickMargin={10}
               axisLine={false}
+              tickFormatter={(value) => `${value}点`}
+              interval={0}
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent hideLabel />}
+              content={<ChartTooltipContent />}
+              labelFormatter={(value) =>
+                `${value}点-${value - possiblePointStep}点`
+              }
             />
-            <Bar dataKey="point" fill="var(--color-point)" radius={8}>
-              <LabelList
-                position="top"
-                offset={12}
-                className="fill-foreground"
-                fontSize={12}
-              />
-            </Bar>
-          </BarChart>
+            <Area
+              type="stepAfter"
+              dataKey="count"
+              fill="var(--color-point)"
+              radius={8}
+            />
+          </AreaChart>
         </ChartContainer>
         <ChartContainer className="w-96" config={radarConfig}>
           <RadarChart
@@ -270,8 +297,10 @@ export default function Result() {
             outerRadius="80%"
             margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
           >
+            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
             <PolarGrid />
             <PolarAngleAxis dataKey="tag" />
+            <PolarRadiusAxis domain={[0, 100]} axisLine={false} tick={false} />
             <Radar
               dataKey="point"
               stroke="var(--color-point)"
