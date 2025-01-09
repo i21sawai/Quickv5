@@ -42,10 +42,16 @@ export const columns: ColumnDef<ExamAttr>[] = [
   {
     accessorKey: 'createdAt',
     header: '作成日',
+    cell: ({ row }) => {
+      return new Date(row.original.createdAt).toLocaleDateString();
+    },
   },
   {
     accessorKey: 'lastEditedAt',
     header: '最終更新日',
+    cell: ({ row }) => {
+      return new Date(row.original.lastEditedAt).toLocaleDateString();
+    },
   },
 ];
 
@@ -69,7 +75,10 @@ export function Examtable<TData, TValue>({
 
   const onClickRow = (row: ExamAttr) => {
     //redirect
-    if (status !== 'authenticated' || session?.user?.email !== row.owner) {
+    const role = session?.user?.email
+      ? JSON.parse(session?.user?.email).role
+      : '';
+    if (status !== 'authenticated' || role !== '管理者') {
       alert('権限がありません');
       return;
     }

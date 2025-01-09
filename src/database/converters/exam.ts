@@ -1,4 +1,4 @@
-import { DocumentData } from 'firebase-admin/firestore';
+import { DocumentData, QueryDocumentSnapshot } from 'firebase-admin/firestore';
 
 import { ExamAttr } from '@/types/exam';
 
@@ -11,18 +11,24 @@ export const examAttrConverter = {
       lastEditedAt: exam.lastEditedAt,
       owner: exam.owner,
       status: exam.status,
+      elemRef: exam.elemRef,
+      saveRef: exam.saveRef,
+      timeLimit: exam.timeLimit,
     };
   },
 
-  fromFirestore(snapshot: DocumentData): ExamAttr {
+  fromFirestore(snapshot: QueryDocumentSnapshot): ExamAttr {
     const data = snapshot.data();
     return {
       id: data.id,
       title: data.title,
-      createdAt: new Date(data.createdAt.seconds * 1000),
-      lastEditedAt: new Date(data.lastEditedAt.seconds * 1000),
+      createdAt: data.createdAt.toDate(),
+      lastEditedAt: data.lastEditedAt.toDate(),
       owner: data.owner,
       status: data.status,
+      elemRef: data.elemRef,
+      saveRef: data.saveRef,
+      timeLimit: data.timeLimit,
     };
   },
 };

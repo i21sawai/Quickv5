@@ -38,12 +38,17 @@ export default function Page() {
       alert('試験IDが既に使われています');
       //router.push(`/exam/${examId}`);
     } else {
-      const res = await fetch('/api/editor', {
+      const res = await fetch('/api/editor/attr', {
         method: 'POST',
         body: JSON.stringify({
           id: examId,
           title: title,
-          userId: session?.user?.email,
+          createdAt: new Date(),
+          lastEditedAt: new Date(),
+          owner: session?.user?.name,
+          status: '下書き',
+          elemRef: `https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${examId}_save.json?ignoreCache=1`,
+          saveRef: `https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${examId}_elem.json?ignoreCache=1`,
         }),
       });
       if (res.status === 400) {
@@ -55,19 +60,6 @@ export default function Page() {
       router.push(`/editor/${examId}`);
     }
   };
-
-  // const tableData = [
-  //   {
-  //     id: '728ed52f',
-  //     title: 'First Exam',
-  //     owner: session?.user?.email,
-  //     amount: 100,
-  //     status: 'draft',
-  //     createdAt: `${new Date().getFullYear()}年${new Date().getMonth()}月${new Date().getDate()}日`,
-  //     lastEditedAt: `${new Date().getFullYear()}年${new Date().getMonth()}月${new Date().getDate()}日`,
-  //   },
-  //   // ...
-  // ];
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full space-y-4 mt-16">

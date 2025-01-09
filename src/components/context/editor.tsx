@@ -13,6 +13,7 @@ import { Value } from '@udecode/plate-common';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 
 import { Element, ElementSaveData } from '@/types/element';
+import { ExamAttr } from '@/types/exam';
 
 export interface EditorContextValue {
   id: string;
@@ -20,6 +21,8 @@ export interface EditorContextValue {
   setBlocks: (text: Value) => void;
   elemSave: ElementSaveData | undefined;
   setElemSave: (elements: ElementSaveData) => void;
+  attr: ExamAttr | undefined;
+  setAttr: (attr: ExamAttr) => void;
   ready: boolean;
 }
 
@@ -59,6 +62,7 @@ export const EditorContextProvider = ({
   const page = path.split('/').slice(-2, -1)[0];
   const [blocks, setBlocks] = useState<Value>(initialValue); //(() => {
   const [ready, setReady] = useState(false);
+  const [attr, setAttr] = useState<ExamAttr | undefined>();
   //   if (typeof window === 'undefined') {
   //     return initialValue;
   //   }
@@ -70,7 +74,6 @@ export const EditorContextProvider = ({
   // });
 
   useEffect(() => {
-    console.log(path, id);
     const f = async () => {
       const sreq = await fetch(
         `https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${id}_save.json?ignoreCache=1`
@@ -94,6 +97,15 @@ export const EditorContextProvider = ({
       } else {
         setBlocks(initialValue);
       }
+      const attrreq = await fetch(`/api/editor/attr?id=${id}`);
+      if (attrreq.status === 200) {
+        const attr = await attrreq.json();
+        //! DON'T FORGET TO CONVERT DATE STRING TO DATE OBJECT
+        attr.createdAt = new Date(attr.createdAt);
+        attr.lastEditedAt = new Date(attr.lastEditedAt);
+        setAttr(attr);
+      }
+
       setReady(true);
     };
     f();
@@ -209,11 +221,8 @@ export const EditorContextProvider = ({
   useEffect(() => {
     if (page !== 'editor') return;
     let isMounted = true;
-    //console.log('upadate?', isMounted, blocks.length);
     const processBlocks = () => {
-      console.log('called', isMounted, blocks.length);
       if (blocks.length <= 1) return; //!isMounted omitted
-      console.log('next');
       let _elements = blocks.map((block, i) => {
         switch (block.type) {
           // case 'h1':
@@ -262,15 +271,23 @@ export const EditorContextProvider = ({
           })
         ).json();
         if (res.status === 'success') {
-          // toast({
-          //   title: 'Image uploaded',
-          // });
           console.log(res.surl);
-          // loc.imgs.unshift(res.url);
-          // setLoc(loc);
         } else {
           console.error(res);
         }
+        if (!attr) return;
+        const newAttr: ExamAttr = {
+          id: id,
+          title: elemSave.title,
+          status: attr.status,
+          owner: attr.owner,
+          createdAt: attr.createdAt,
+          lastEditedAt: new Date(),
+          elemRef: attr.elemRef,
+          saveRef: attr.saveRef,
+          timeLimit: attr.timeLimit,
+        };
+        setAttr(newAttr);
       };
       f();
     };
@@ -282,12 +299,25 @@ export const EditorContextProvider = ({
     };
   }, [blocks, identify]);
 
+  useEffect(() => {
+    if (!attr) return;
+    async function f() {
+      await fetch(`/api/editor/attr`, {
+        method: 'POST',
+        body: JSON.stringify(attr),
+      });
+    }
+    f();
+  }, [attr]);
+
   const value: EditorContextValue = {
     id,
     blocks,
     setBlocks,
     elemSave,
     setElemSave,
+    attr,
+    setAttr,
     ready,
   };
 
