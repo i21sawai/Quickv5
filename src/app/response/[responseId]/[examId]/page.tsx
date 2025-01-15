@@ -59,6 +59,48 @@ export default function IndexPage() {
     _setElemSave(elemSave);
   }, [elemSave, response]);
 
+  const total = useMemo(() => {
+    //calculate point
+    if (!response) return;
+    if (!elemSave) return;
+    let total = 0;
+    response.answers.forEach((answer, i) => {
+      const question = elemSave.elements[i];
+      const trueAnswer = question.answers;
+      switch (answer.type) {
+        case 'radio':
+          const correct = trueAnswer[0];
+          const a = answer.answers[0];
+          if (a.toString() === correct.toString()) {
+            total += question.point;
+          }
+          break;
+        case 'matrix':
+          trueAnswer.forEach((correct, i) => {
+            const a = answer.answers[i];
+            if (a === correct) {
+              total += question.point;
+            }
+          });
+          break;
+        case 'text':
+        case 'paragraph':
+          for (let i = 0; i < trueAnswer.length; i++) {
+            const correct = trueAnswer[i];
+            const a = answer.answers[i];
+            if (a === correct) {
+              total += question.point;
+              break;
+            }
+          }
+          break;
+        default:
+          console.error('Not implemented');
+      }
+    });
+    return total;
+  }, [response, elemSave]);
+
   if (!ready.current) return <div>Loading...</div>;
 
   return (
@@ -67,7 +109,9 @@ export default function IndexPage() {
 
       <div className="flex w-full min-w-0 max-w-full justify-center">
         <div className="w-full max-w-screen-md p-0 md:p-8">
-          {' '}
+          <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl mb-16">
+            {total}点
+          </h1>
           <FormRenderer elemSave={_elemSave} setElemSave={_setElemSave} />
         </div>
       </div>
