@@ -27,11 +27,16 @@ export async function POST(req: NextRequest, res: NextResponse) {
       .set(res);
     //add responseId to user
     //create user if not exist
-    await fs_user
-      .doc(res.userId)
-      .set({ id: res.userId, responses: [] }, { merge: true });
-    let responses = (await fs_user.doc(res.userId).get()).data()?.responses;
-    if (!responses) responses = [];
+    let user = (await fs_user.doc(res.userId).get()).data();
+    let responses = [];
+    if (!user) {
+      await fs_user.doc(res.userId).set({
+        id: res.userId,
+        responses: [],
+      });
+    } else {
+      responses = user.responses;
+    }
     await fs_user.doc(res.userId).update({
       responses: [...responses, JSON.stringify(res)],
     });

@@ -77,9 +77,9 @@ export default function IndexPage() {
           break;
         case 'matrix':
           trueAnswer.forEach((correct, i) => {
-            const a = answer.answers[i];
-            if (a === correct) {
-              total += question.point;
+            const a = (answer.answers as number[][])[i][0];
+            if (a === (correct as number[])[0]) {
+              total += question.point / trueAnswer.length;
             }
           });
           break;

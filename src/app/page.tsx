@@ -24,7 +24,9 @@ export default function Page() {
     data: tableData,
     error,
     isLoading,
-  } = useSWR(`/api/exam/response/list/${session?.user?.name}`, fetcher);
+  } = useSWR(`/api/exam/response/list/${session?.user?.name}`, fetcher, {
+    revalidateOnMount: true,
+  });
 
   //!TODO Replace with firestore
   const onSubmit = async () => {
@@ -50,7 +52,9 @@ export default function Page() {
           />
           <Button onClick={() => onSubmit()}>試験を始める</Button>
         </div>
-        {!isLoading && <ResponseTable columns={columns} data={tableData} />}
+        {!isLoading && tableData && (
+          <ResponseTable columns={columns} data={tableData} />
+        )}
       </div>
     </div>
   );
