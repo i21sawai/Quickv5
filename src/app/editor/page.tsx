@@ -27,7 +27,7 @@ export default function Page() {
     data: tableData,
     error,
     isLoading,
-  } = useSWR('/api/editor/list', fetcher);
+  } = useSWR('/api/editor/list', fetcher, { revalidateOnMount: true });
 
   const router = useRouter();
   const onSubmit = async () => {
