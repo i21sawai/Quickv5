@@ -9,7 +9,7 @@ import useSWR from 'swr';
 import { ExamAttr } from '@/types/exam';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { columns, Examtable } from '@/components/oarganisms/examTable';
+import { columns, Examtable } from '@/components/organisms/examTable';
 
 //ask user to decide id
 //it's kind of bad to leave many drafts

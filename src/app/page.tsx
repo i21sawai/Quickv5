@@ -3,13 +3,29 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import useSWR from 'swr';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { columns, ResponseTable } from '@/components/organisms/responseTable';
 
 export default function Page() {
   const [examId, setExamId] = useState<string>('');
   const router = useRouter();
+  const fetcher = (url: string) =>
+    fetch(url).then(async (res) => {
+      const json = (await res.json()).map((data: string) => JSON.parse(data));
+
+      return json;
+    });
+  const { data: session, status } = useSession();
+  const {
+    data: tableData,
+    error,
+    isLoading,
+  } = useSWR(`/api/exam/response/list/${session?.user?.name}`, fetcher);
+
   //!TODO Replace with firestore
   const onSubmit = async () => {
     const ereq = await fetch(
@@ -34,6 +50,7 @@ export default function Page() {
           />
           <Button onClick={() => onSubmit()}>試験を始める</Button>
         </div>
+        {!isLoading && <ResponseTable columns={columns} data={tableData} />}
       </div>
     </div>
   );

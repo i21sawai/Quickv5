@@ -21,6 +21,7 @@ if (!getApps().length) {
 
 export const db = getFirestore();
 export const fs_e = db.collection('Exam').doc('exam').collection('exams');
+export const fs_user = db.collection('Exam').doc('user').collection('users');
 
 // export const fs_a = db
 //   .collection('mapman')

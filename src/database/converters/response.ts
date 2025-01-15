@@ -5,6 +5,7 @@ import { AllResponse, Response } from '@/types/response';
 export const responseConverter = {
   toFirestore(response: Response): DocumentData {
     return {
+      id: response.id,
       examId: response.examId,
       userId: response.userId,
       answers: response.answers.map((a) => JSON.stringify(a)),
@@ -15,6 +16,7 @@ export const responseConverter = {
   fromFirestore(snapshot: DocumentData): Response {
     const data = snapshot.data();
     return {
+      id: data.id,
       examId: data.examId,
       userId: data.userId,
       answers: data.answers.map((a: string) => JSON.parse(a)),
@@ -28,6 +30,7 @@ export const allResponseConverter = {
     return {
       examId: response.examId,
       userIdList: response.userIdList,
+      responseIdList: response.responseIdList,
       answersList: response.answersList.map((a) => JSON.stringify(a)),
       updateAt: response.updateAt,
     };
@@ -39,6 +42,7 @@ export const allResponseConverter = {
     return {
       examId: data.examId,
       userIdList: data.userIdList,
+      responseIdList: data.responseIdList,
       answersList: data.answersList.map((a: string) => JSON.parse(a)),
       updateAt: new Date(data.updateAt),
     };

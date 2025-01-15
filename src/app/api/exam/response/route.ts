@@ -3,7 +3,7 @@ import {
   allResponseConverter,
   responseConverter,
 } from '@/database/converters/response';
-import { fs_e } from '@/database/firestore';
+import { fs_e, fs_user } from '@/database/firestore';
 import { makeid } from '@/utils/str';
 
 import { ElementSaveData } from '@/types/element';
@@ -22,9 +22,19 @@ export async function POST(req: NextRequest, res: NextResponse) {
     await fs_e
       .doc(res.examId)
       .collection('responses')
-      .doc(`${res.userId}-${makeid(10)}`)
+      .doc(res.id)
       .withConverter(responseConverter)
       .set(res);
+    //add responseId to user
+    //create user if not exist
+    await fs_user
+      .doc(res.userId)
+      .set({ id: res.userId, responses: [] }, { merge: true });
+    let responses = (await fs_user.doc(res.userId).get()).data()?.responses;
+    if (!responses) responses = [];
+    await fs_user.doc(res.userId).update({
+      responses: [...responses, JSON.stringify(res)],
+    });
     //append answer to all res
     let allRes = (
       await fs_e
@@ -55,6 +65,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       allRes = {
         examId: res.examId,
         userIdList: [res.userId],
+        responseIdList: [res.id],
         answersList: answerList,
         updateAt: res.submitTime,
       };
@@ -88,13 +99,16 @@ export async function POST(req: NextRequest, res: NextResponse) {
 }
 
 export async function GET(req: NextRequest, res: NextResponse) {
-  const { examid, userid } = await req.json();
+  const searchParams = req.nextUrl.searchParams;
+  const examId = searchParams.get('examId');
+  const submissionId = searchParams.get('submissionId');
+  if (!examId || !submissionId) return NextResponse.json({ status: 400 });
   const doc = await (
     await fs_e
-      .doc(examid)
+      .doc(examId)
       .collection('responses')
       .withConverter<Response>(responseConverter)
-      .doc(userid)
+      .doc(submissionId)
       .get()
   ).data();
   if (!doc) {

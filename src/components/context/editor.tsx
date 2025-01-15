@@ -74,6 +74,7 @@ export const EditorContextProvider = ({
   // });
 
   useEffect(() => {
+    if (!id) return;
     const f = async () => {
       const sreq = await fetch(
         `https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${id}_save.json?ignoreCache=1`

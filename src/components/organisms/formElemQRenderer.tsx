@@ -23,28 +23,50 @@ export const FormElemQRenderer = ({
   element: Element;
   setElement: (e: Element) => void;
 }) => {
-  const [text, setText] = useState('');
-
   switch (element.type) {
     case 'text':
       return (
-        <Input
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            setElement({ ...element, answers: [e.target.value] });
-          }}
-        />
+        <div className="flex flex-col gap-4">
+          <Input
+            value={element.answers[0] as string}
+            onChange={(e) => {
+              setElement({ ...element, answers: [e.target.value] });
+            }}
+            disabled={element.readonly}
+          />
+          {element.trueAnswers && (
+            <div className="flex flex-col gap-4">
+              <Label className="font-bold text-green-500">模範解答</Label>
+              {element.trueAnswers.map((ans, i) => (
+                <p key={i} className="text-muted-foreground">
+                  {ans}
+                </p>
+              ))}
+            </div>
+          )}
+        </div>
       );
     case 'paragraph':
       return (
-        <Textarea
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            setElement({ ...element, answers: [e.target.value] });
-          }}
-        />
+        <div className="flex flex-col gap-4">
+          <Textarea
+            value={element.answers[0] as string}
+            onChange={(e) => {
+              setElement({ ...element, answers: [e.target.value] });
+            }}
+            disabled={element.readonly}
+          />
+          {element.trueAnswers && (
+            <div className="flex flex-col gap-4">
+              <Label className="font-bold text-green-500">模範解答</Label>
+              {element.trueAnswers.map((ans, i) => (
+                <p key={i} className="text-muted-foreground">
+                  {ans}
+                </p>
+              ))}
+            </div>
+          )}
+        </div>
       );
     case 'radio':
       return (
@@ -53,10 +75,18 @@ export const FormElemQRenderer = ({
           onValueChange={(value) => {
             setElement({ ...element, answers: [parseInt(value)] });
           }}
+          disabled={element.readonly}
         >
           {element.options.map((option, i) => (
             <div key={i + 1} className="flex items-center gap-2">
-              <RadioGroupItem value={`${i + 1}`} />
+              <RadioGroupItem
+                value={`${i + 1}`}
+                className={
+                  element.trueAnswers && i + 1 === element.trueAnswers[0]
+                    ? 'bg-green-500 border-green-500'
+                    : ''
+                }
+              />
               <Label>{option}</Label>
             </div>
           ))}
@@ -95,10 +125,22 @@ export const FormElemQRenderer = ({
                       answers[i] = [parseInt(value)];
                       setElement({ ...element, answers });
                     }}
-                    className="flex justify-end gap-[48px] px-3 md:gap-[96px] md:px-8"
+                    className={
+                      'flex justify-end gap-[48px] px-3 md:gap-[96px] md:px-8 '
+                    }
+                    disabled={element.readonly}
                   >
                     {element.options.map((_, j) => (
-                      <RadioGroupItem key={j} value={`${j + 1}`} />
+                      <RadioGroupItem
+                        key={j}
+                        value={`${j + 1}`}
+                        className={
+                          element.trueAnswers &&
+                          j + 1 === (element.trueAnswers as number[][])[i][0]
+                            ? 'bg-green-500 border-green-500'
+                            : ''
+                        }
+                      />
                     ))}
                   </RadioGroup>
                 </TableCell>

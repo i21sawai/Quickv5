@@ -9,8 +9,10 @@ export type Element = {
   options: string[];
   questions: string[];
   answers: number[] | number[][] | string[];
+  trueAnswers?: number[] | number[][] | string[];
   telems: TElement[];
   tags: string[];
+  readonly?: boolean;
 };
 
 export type ElementSaveData = {

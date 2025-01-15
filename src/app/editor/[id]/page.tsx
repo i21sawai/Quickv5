@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useEditorContext } from '@/components/context/editor';
-import { FormRenderer } from '@/components/oarganisms/formRenderer';
+import { FormRenderer } from '@/components/organisms/formRenderer';
 import PlateEditor from '@/components/plate-editor';
 
 export default function IndexPage() {

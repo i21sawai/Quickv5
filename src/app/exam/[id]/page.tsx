@@ -3,12 +3,13 @@
 import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { makeid } from '@/utils/str';
 import { useSession } from 'next-auth/react';
 
 import { AnswerKey, Response } from '@/types/response';
 import { Button } from '@/components/ui/button';
 import { useEditorContext } from '@/components/context/editor';
-import { FormRenderer } from '@/components/oarganisms/formRenderer';
+import { FormRenderer } from '@/components/organisms/formRenderer';
 
 export default function IndexPage() {
   const { blocks, setBlocks, elemSave, setElemSave, ready, id, attr } =
@@ -33,7 +34,8 @@ export default function IndexPage() {
       };
     });
     const res: Response = {
-      userId: session!.user!.email!,
+      id: `${session!.user!.name!}-${makeid(10)}`,
+      userId: session!.user!.name!,
       examId: id,
       answers: answers,
       submitTime: new Date(),

@@ -14,6 +14,7 @@ export type AnswerKey = {
 };
 //export type Response
 export type Response = {
+  id: string;
   examId: string;
   userId: string;
   answers: AnswerKey[];
@@ -31,6 +32,7 @@ export type AllAnswerKey = {
 export type AllResponse = {
   examId: string;
   userIdList: string[];
+  responseIdList: string[];
   answersList: AllAnswerKey[];
   updateAt: Date;
 };
