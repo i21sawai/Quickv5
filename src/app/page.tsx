@@ -15,8 +15,9 @@ export default function Page() {
   const router = useRouter();
   const fetcher = (url: string) =>
     fetch(url).then(async (res) => {
-      const json = (await res.json()).map((data: string) => JSON.parse(data));
-
+      const json = (await res.json())
+        .map((data: string) => JSON.parse(data))
+        .reverse();
       return json;
     });
   const { data: session, status } = useSession();
@@ -53,7 +54,7 @@ export default function Page() {
           <Button onClick={() => onSubmit()}>試験を始める</Button>
         </div>
         {!isLoading && tableData && (
-          <ResponseTable columns={columns} data={tableData} />
+          <ResponseTable columns={columns} data={tableData.reverse()} />
         )}
       </div>
     </div>

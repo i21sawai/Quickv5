@@ -22,7 +22,11 @@ export default function Page() {
   const { data: session, status } = useSession();
   const [title, setTitle] = useState<string>('');
   const [examId, setExamId] = useState<string>('');
-  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+  const fetcher = (url: string) =>
+    fetch(url).then(async (res) => {
+      const json = (await res.json()).reverse();
+      return json;
+    });
   const {
     data: tableData,
     error,
