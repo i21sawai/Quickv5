@@ -40,7 +40,7 @@ export default function Result() {
   const { data, error }: { data: { data: AllResponse }; error: any } = useSWR(
     `/api/result?id=${id}`,
     fetcher,
-    { revalidateOnMount: true }
+    { revalidateOnReconnect: true }
   );
 
   const summarizeRadio = (correct: number[], data: number[][]) => {

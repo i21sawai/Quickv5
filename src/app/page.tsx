@@ -26,7 +26,7 @@ export default function Page() {
     error,
     isLoading,
   } = useSWR(`/api/exam/response/list/${session?.user?.name}`, fetcher, {
-    revalidateOnMount: true,
+    revalidateOnReconnect: true,
   });
 
   //!TODO Replace with firestore

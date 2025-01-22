@@ -42,11 +42,11 @@ export default function IndexPage() {
           </p>
           <div className="flex gap-4">
             <Button asChild>
-              <Link href={`/exam/${elemSave?.id}`}>生徒用 : 回答ページ</Link>
+              <Link href={`/exam/${elemSave?.id}`}>回答者用 : 回答ページ</Link>
             </Button>
             <Button asChild>
               <Link href={`/result/${elemSave?.id}`}>
-                教員用 : 結果確認ページ
+                管理者用 : 結果確認ページ
               </Link>
             </Button>
           </div>
