@@ -336,6 +336,55 @@ export default function Result() {
     a.click();
     URL.revokeObjectURL(url);
   };
+  const onDownloadResultAsCSV = () => {
+    if (!data) return;
+    let res = 'ユーザーID,提出日時,提出ID,';
+    let count = 1;
+    //Making header
+    for (let answer of data.data.answersList) {
+      console.log(
+        answer.correctAnswers,
+        isNaN((answer.correctAnswers as number[][])[0][0])
+      );
+      if (isNaN((answer.correctAnswers as number[][])[0][0])) {
+        res += count++ + '.' + answer.title + ',';
+      } else {
+        for (let i = 0; i < answer.correctAnswers.length; i++) {
+          res += `${count}.${i}.${answer.title},`;
+        }
+        count++;
+      }
+    }
+    res += '\n';
+    for (let i = 0; i < data.data.userIdList.length; i++) {
+      res += data.data.userIdList[i] + ',';
+      //convert to local time string
+      let dateStr = new Date(data.data.submissionTimeList[i]).toLocaleString();
+      //escape
+      dateStr = dateStr.replace(/,/g, ' ');
+      res += dateStr + ',';
+      res += data.data.responseIdList[i] + ',';
+      for (let answer of data.data.answersList) {
+        if (isNaN((answer.correctAnswers as number[][])[0][0])) {
+          res += answer.answersList[i][0] + ',';
+        } else {
+          //asserting cast to avoid error
+          for (let j = 0; j < answer.correctAnswers.length; j++) {
+            res += (answer.answersList as [number[][]])[i][j][0] + ',';
+          }
+        }
+      }
+      res += '\n';
+    }
+    const bom = new Uint8Array([0xef, 0xbb, 0xbf]); //UTF-8 BOM
+    const blob = new Blob([bom, res], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${elemSave?.id}_result.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="flex w-full min-w-0 max-w-full justify-center">
@@ -350,7 +399,9 @@ export default function Result() {
             <Link href={`/editor/${elemSave?.id}`}>問題を見る</Link>
           </Button>
           <Button onClick={onDownloadExam}>問題のダウンロード</Button>
-          <Button onClick={onDownloadResult}>回答結果のダウンロード</Button>
+          <Button onClick={onDownloadResultAsCSV}>
+            回答結果のダウンロード
+          </Button>
         </div>
         {visualizeOverview(overview())}
         {data?.data.answersList?.map((question) => {

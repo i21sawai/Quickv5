@@ -72,6 +72,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
         userIdList: [res.userId],
         responseIdList: [res.id],
         answersList: answerList,
+        submissionTimeList: [res.submitTime],
         updateAt: res.submitTime,
       };
       await fs_e
@@ -87,6 +88,8 @@ export async function POST(req: NextRequest, res: NextResponse) {
         correctAnswers
       );
       allRes.userIdList.push(res.userId);
+      allRes.responseIdList.push(res.id);
+      allRes.submissionTimeList.push(res.submitTime);
       allRes.updateAt = res.submitTime;
       await fs_e
         .doc(res.examId)

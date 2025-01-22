@@ -32,6 +32,7 @@ export const allResponseConverter = {
       userIdList: response.userIdList,
       responseIdList: response.responseIdList,
       answersList: response.answersList.map((a) => JSON.stringify(a)),
+      submissionTimeList: response.submissionTimeList.map((t) => t.toString()),
       updateAt: response.updateAt,
     };
   },
@@ -44,6 +45,9 @@ export const allResponseConverter = {
       userIdList: data.userIdList,
       responseIdList: data.responseIdList,
       answersList: data.answersList.map((a: string) => JSON.parse(a)),
+      submissionTimeList: data.submissionTimeList.map(
+        (t: string) => new Date(t)
+      ),
       updateAt: new Date(data.updateAt),
     };
   },

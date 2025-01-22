@@ -33,6 +33,7 @@ export type AllResponse = {
   examId: string;
   userIdList: string[];
   responseIdList: string[];
+  submissionTimeList: Date[];
   answersList: AllAnswerKey[];
   updateAt: Date;
 };
