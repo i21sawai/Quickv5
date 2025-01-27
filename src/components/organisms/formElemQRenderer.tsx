@@ -18,10 +18,10 @@ import { Textarea } from '../ui/textarea';
 
 export const FormElemQRenderer = ({
   _element,
-  setNewElement,
+  _setElement,
 }: {
   _element: Element;
-  setNewElement: (e: Element) => void;
+  _setElement: (e: Element) => void;
 }) => {
   const [element, setElement] = useState(_element);
 
@@ -33,6 +33,7 @@ export const FormElemQRenderer = ({
             value={element.answers[0] as string}
             onChange={(e) => {
               setElement({ ...element, answers: [e.target.value] });
+              _setElement({ ...element, answers: [e.target.value] });
             }}
             disabled={element.readonly}
           />
@@ -54,7 +55,8 @@ export const FormElemQRenderer = ({
           <Textarea
             value={element.answers[0] as string}
             onChange={(e) => {
-              //setElement({ ...element, answers: [e.target.value] });
+              setElement({ ...element, answers: [e.target.value] });
+              _setElement({ ...element, answers: [e.target.value] });
             }}
             disabled={element.readonly}
           />
@@ -76,6 +78,7 @@ export const FormElemQRenderer = ({
           value={`${element.answers[0]}` as string}
           onValueChange={(value) => {
             setElement({ ...element, answers: [parseInt(value)] });
+            _setElement({ ...element, answers: [parseInt(value)] });
           }}
           disabled={element.readonly}
         >
@@ -134,6 +137,7 @@ export const FormElemQRenderer = ({
                       _answers[i] = [parseInt(value)];
                       console.log(_answers);
                       setElement({ ...element, answers: _answers });
+                      _setElement({ ...element, answers: _answers });
                     }}
                     className={
                       'flex justify-end gap-[48px] px-3 md:gap-[96px] md:px-8 '

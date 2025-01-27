@@ -73,6 +73,7 @@ export default function IndexPage() {
       }
       return a;
     });
+    console.log(response);
     const res = await fetch('/api/exam/response', {
       method: 'POST',
       headers: {
@@ -182,11 +183,7 @@ export default function IndexPage() {
           <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight pb-8">
             {timeNotice}
           </h3>
-          <FormRenderer
-            elemSave={elemSave}
-            setElemSave={setElemSave}
-            setNewElemSave={setNewElemSave}
-          />
+          <FormRenderer elemSave={elemSave} setElemSave={setNewElemSave} />
           <div className="flex h-[120px] items-end justify-end ">
             <Button variant="default" onClick={submit}>
               提出

@@ -7,14 +7,9 @@ import { FormElemRenderer } from './formElemRenderer';
 export type FormRendererProps = {
   elemSave: ElementSaveData | undefined;
   setElemSave: (elem: ElementSaveData) => void;
-  setNewElemSave: (elem: ElementSaveData) => void;
 };
 
-export const FormRenderer = ({
-  elemSave,
-  setElemSave,
-  setNewElemSave,
-}: FormRendererProps) => {
+export const FormRenderer = ({ elemSave, setElemSave }: FormRendererProps) => {
   const [rendered, setRendered] = useState<(JSX.Element | null | undefined)[]>(
     []
   );
@@ -44,9 +39,10 @@ export const FormRenderer = ({
             key={i}
             count={count++}
             elem={element}
-            setNewElem={(e) => {
+            setElem={(e) => {
               elemSave.elements[i] = e;
-              setNewElemSave({ ...elemSave });
+              console.log(e);
+              setElemSave({ ...elemSave });
             }}
           />
         );
