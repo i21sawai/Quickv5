@@ -16,6 +16,7 @@ export default function IndexPage() {
   const [response, setResponse] = useState<Response | undefined>();
   const ready = useRef(false);
   const [_elemSave, _setElemSave] = useState<ElementSaveData | undefined>();
+  const calculated = useRef(false);
 
   useEffect(() => {
     const f = async () => {
@@ -38,7 +39,6 @@ export default function IndexPage() {
   }, []);
 
   useEffect(() => {
-    console.log(elemSave, response);
     if (!elemSave || !response || ready.current) return; //can't early return this
     elemSave.elements = elemSave.elements.map((e, i) => {
       return {
@@ -63,6 +63,9 @@ export default function IndexPage() {
     //calculate point
     if (!response) return;
     if (!elemSave) return;
+    if (calculated.current) return;
+    console.log(elemSave, response);
+
     let total = 0;
     response.answers.forEach((answer, i) => {
       const question = elemSave.elements[i];
@@ -78,6 +81,7 @@ export default function IndexPage() {
         case 'matrix':
           trueAnswer.forEach((correct, i) => {
             const a = (answer.answers as number[][])[i][0];
+            console.log(a === (correct as number[])[0]);
             if (a === (correct as number[])[0]) {
               total += question.point / trueAnswer.length;
             }
@@ -98,6 +102,7 @@ export default function IndexPage() {
           console.error('Not implemented');
       }
     });
+    calculated.current = true;
     return total;
   }, [response, elemSave]);
 
