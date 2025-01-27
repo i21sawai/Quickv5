@@ -241,6 +241,8 @@ export default function PlateEditor() {
           elemRef: attr.elemRef,
           saveRef: attr.saveRef,
           timeLimit: attr.timeLimit,
+          examStartAt: attr.examStartAt,
+          examEndAt: attr.examEndAt,
         };
         setAttr(newAttr);
       };
