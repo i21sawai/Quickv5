@@ -46,6 +46,8 @@ export async function POST(req: NextRequest) {
         elemRef: json.elemRef,
         saveRef: json.saveRef,
         timeLimit: json.timeLimit,
+        examStartAt: new Date(json.examStartAt),
+        examEndAt: new Date(json.examEndAt),
       });
     return NextResponse.json({ status: 'success' });
   } catch (e) {

@@ -1,18 +1,37 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 
-import { ElementSaveData } from '@/types/element';
+import { Element, ElementSaveData } from '@/types/element';
 
 import { FormElemRenderer } from './formElemRenderer';
 
 export type FormRendererProps = {
   elemSave: ElementSaveData | undefined;
   setElemSave: (elem: ElementSaveData) => void;
+  setNewElemSave: (elem: ElementSaveData) => void;
 };
 
-export const FormRenderer = ({ elemSave, setElemSave }: FormRendererProps) => {
+export const FormRenderer = ({
+  elemSave,
+  setElemSave,
+  setNewElemSave,
+}: FormRendererProps) => {
   const [rendered, setRendered] = useState<(JSX.Element | null | undefined)[]>(
     []
   );
+  //use Reducer to prevent unnecessary re-renders
+  type ElemAction = { type: 'set'; id: number; elem: Element };
+  const reducer = (
+    state: ElementSaveData,
+    action: ElemAction
+  ): ElementSaveData => {
+    switch (action.type) {
+      case 'set':
+        state.elements[action.id] = action.elem;
+        return { ...state };
+      default:
+        return state;
+    }
+  };
 
   useEffect(() => {
     if (!elemSave) return;
@@ -25,10 +44,9 @@ export const FormRenderer = ({ elemSave, setElemSave }: FormRendererProps) => {
             key={i}
             count={count++}
             elem={element}
-            setElem={(e) => {
+            setNewElem={(e) => {
               elemSave.elements[i] = e;
-              console.log(e);
-              setElemSave({ ...elemSave });
+              setNewElemSave({ ...elemSave });
             }}
           />
         );

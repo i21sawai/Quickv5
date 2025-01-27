@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import useSWR from 'swr';
 
-import { ExamAttr } from '@/types/exam';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { columns, Examtable } from '@/components/organisms/examTable';
@@ -53,6 +52,9 @@ export default function Page() {
           status: '下書き',
           elemRef: `https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${examId}_save.json?ignoreCache=1`,
           saveRef: `https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${examId}_elem.json?ignoreCache=1`,
+          timeLimit: 60,
+          examStartAt: new Date(),
+          examEndAt: new Date(),
         }),
       });
       if (res.status === 400) {

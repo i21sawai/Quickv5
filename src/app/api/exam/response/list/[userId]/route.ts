@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { examAttrConverter } from '@/database/converters/exam';
-import { responseConverter } from '@/database/converters/response';
 import { fs_e, fs_user } from '@/database/firestore';
-
-import { ExamAttr } from '@/types/exam';
 
 export async function GET(
   request: NextRequest,

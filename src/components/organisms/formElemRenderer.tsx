@@ -10,11 +10,11 @@ import { FormElemQRenderer } from './formElemQRenderer';
 export const FormElemRenderer = ({
   count,
   elem,
-  setElem,
+  setNewElem,
 }: {
   count: number;
   elem: Element;
-  setElem: (e: Element) => void;
+  setNewElem: (e: Element) => void;
 }) => {
   return (
     <div className="flex flex-col">
@@ -41,17 +41,15 @@ export const FormElemRenderer = ({
       {elem && (
         <div>
           {elem.telems.length >= 1 && (
-            <Plate
-              plugins={plugins}
-              value={JSON.parse(JSON.stringify(elem.telems))}
-              readOnly
-              key={count}
-            >
+            <Plate plugins={plugins} value={elem.telems} readOnly key={count}>
               <Editor className="border-none p-0" readOnly />
             </Plate>
           )}
 
-          <FormElemQRenderer element={elem as Element} setElement={setElem} />
+          <FormElemQRenderer
+            _element={elem as Element}
+            setNewElement={setNewElem}
+          />
         </div>
       )}
     </div>

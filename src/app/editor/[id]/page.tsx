@@ -1,11 +1,12 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
-import { ExamAttr } from '@/types/exam';
 import { Button } from '@/components/ui/button';
+import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -25,6 +26,11 @@ export default function IndexPage() {
   const { elemSave, setElemSave, ready, attr, setAttr } = useEditorContext();
   const { data, status } = useSession();
   const router = useRouter();
+  const [update, setUpdate] = useState(0);
+
+  useEffect(() => {
+    setUpdate((prev) => prev + 1);
+  }, [elemSave]);
 
   if (
     status === 'authenticated' &&
@@ -53,50 +59,44 @@ export default function IndexPage() {
 
           {attr && (
             <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label>状態変更</Label>
-              <Select
-                value={attr?.status}
-                onValueChange={(e) =>
+              <Label>試験開始時間</Label>
+              <DateTimePicker
+                date={attr.examStartAt}
+                setDate={(date) =>
                   setAttr({
                     ...attr,
-                    status: e as
-                      | '下書き'
-                      | '回答募集中'
-                      | '採点中'
-                      | '採点完了',
+                    examStartAt: new Date(
+                      date.getFullYear(),
+                      date.getMonth(),
+                      date.getDate(),
+                      date.getHours(),
+                      date.getMinutes(),
+                      0
+                    ),
                   })
                 }
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="問題の状態を設定" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="下書き">下書き</SelectItem>
-                    <SelectItem value="回答募集中">回答募集中</SelectItem>
-                    <SelectItem value="採点中">採点中</SelectItem>
-                    <SelectItem value="採点完了">採点完了</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              />
             </div>
           )}
           {attr && (
             <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label htmlFor="timeLimit">試験時間(分)</Label>
-              <Input
-                className="w-[120px]"
-                id="timeLimit"
-                placeholder="試験時間"
-                type="number"
-                value={attr?.timeLimit}
-                onChange={(e) =>
+              <Label>試験終了時間</Label>
+              <DateTimePicker
+                date={attr.examEndAt}
+                setDate={(date) =>
+                  //the seconds part should be zero
                   setAttr({
                     ...attr,
-                    timeLimit: parseInt(e.target.value),
+                    examEndAt: new Date(
+                      date.getFullYear(),
+                      date.getMonth(),
+                      date.getDate(),
+                      date.getHours(),
+                      date.getMinutes(),
+                      0
+                    ),
                   })
                 }
-                min={0}
               />
             </div>
           )}
@@ -110,7 +110,11 @@ export default function IndexPage() {
             {/* <h1 className="text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
             プレビュー
           </h1> */}
-            <FormRenderer elemSave={elemSave} setElemSave={setElemSave} />
+            <FormRenderer
+              elemSave={elemSave}
+              setElemSave={setElemSave}
+              key={update}
+            />
           </div>
         </div>
       </section>

@@ -12,6 +12,10 @@ export const siteConfig = {
       title: '作成',
       href: '/editor',
     },
+    {
+      title: '使い方ガイド',
+      href: 'https://cat-form-2c7.notion.site/Web-183c8df8f8f98072a8e3fe0314e42e88?pvs=4',
+    },
   ],
   links: {
     twitter: 'https://twitter.com/zbeyens',

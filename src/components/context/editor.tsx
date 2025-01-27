@@ -17,13 +17,16 @@ import { ExamAttr } from '@/types/exam';
 
 export interface EditorContextValue {
   id: string;
-  blocks: Value;
-  setBlocks: (text: Value) => void;
+  page: string;
   elemSave: ElementSaveData | undefined;
   setElemSave: (elements: ElementSaveData) => void;
   attr: ExamAttr | undefined;
   setAttr: (attr: ExamAttr) => void;
   ready: boolean;
+  status: string;
+  setStatus: (status: string) => void;
+  autosave: boolean;
+  setAutosave: (autosave: boolean) => void;
 }
 
 export const EditorContext = createContext<EditorContextValue | undefined>(
@@ -46,45 +49,25 @@ export interface EditorContextProviderProps {
   children: ReactNode;
 }
 
-const initialValue = [
-  {
-    id: '1',
-    type: ELEMENT_PARAGRAPH,
-    children: [{ text: '' }],
-  },
-];
-
 export const EditorContextProvider = ({
   children,
 }: EditorContextProviderProps) => {
   const path = usePathname();
   const id = path.split('/').pop() || '';
   const page = path.split('/').slice(-2, -1)[0];
-  const [blocks, setBlocks] = useState<Value>(initialValue); //(() => {
+
   const [ready, setReady] = useState(false);
   const [attr, setAttr] = useState<ExamAttr | undefined>();
-  //   if (typeof window === 'undefined') {
-  //     return initialValue;
-  //   }
-  //   const blocks = await fetch(`https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${id}_save.json`)
-  //   if (blocks) {
-  //     return JSON.parse(blocks);
-  //   }
-  //   return initialValue;
-  // });
+  const [autosave, setAutosave] = useState(true);
+  const [status, setStatus] = useState('loading');
 
   useEffect(() => {
-    if (!id) return;
     const f = async () => {
-      const sreq = await fetch(
-        `https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${id}_save.json?ignoreCache=1`
-      );
+      if (id === 'editor') return;
       const ereq = await fetch(
         `https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${id}_elem.json?ignoreCache=1`
       );
-      if (sreq.status === 200 && ereq.status === 200) {
-        const save = await sreq.json();
-        setBlocks(save);
+      if (ereq.status === 200) {
         let elem = (await ereq.json()) as ElementSaveData;
         if (page === 'exam') {
           //delete answer
@@ -95,8 +78,6 @@ export const EditorContextProvider = ({
           });
         }
         setElemSave(elem);
-      } else {
-        setBlocks(initialValue);
       }
       const attrreq = await fetch(`/api/editor/attr?id=${id}`);
       if (attrreq.status === 200) {
@@ -104,6 +85,8 @@ export const EditorContextProvider = ({
         //! DON'T FORGET TO CONVERT DATE STRING TO DATE OBJECT
         attr.createdAt = new Date(attr.createdAt);
         attr.lastEditedAt = new Date(attr.lastEditedAt);
+        attr.examStartAt = new Date(attr.examStartAt);
+        attr.examEndAt = new Date(attr.examEndAt);
         setAttr(attr);
       }
 
@@ -113,192 +96,6 @@ export const EditorContextProvider = ({
   }, [id]);
 
   const [elemSave, setElemSave] = useState<ElementSaveData | undefined>();
-
-  const get = useCallback(
-    (i: number) => {
-      return blocks[Math.min(i, blocks.length - 1)];
-    },
-    [blocks]
-  );
-
-  const identify = useCallback(
-    (i: number): Element | undefined => {
-      const block = get(i);
-      if (!(block.type === 'h2')) return undefined;
-
-      const point =
-        (get(i + 1).type === 'p' &&
-          !isNaN(parseFloat(get(i + 1).children[0].text as string)) &&
-          parseFloat(get(i + 1).children[0].text as string)) ||
-        0;
-      // except for first one
-      const tags = (get(i + 1).children[0].text as string)
-        .trim()
-        .split(',')
-        .slice(1);
-
-      let element: Element = {
-        id: block.id as string,
-        type: undefined,
-        title: block.children[0].text as string,
-        point: point,
-        options: [],
-        questions: [],
-        answers: [],
-        telems: [],
-        tags: tags,
-      };
-      // check if bold in mardown
-      const bold = block.children[0].bold as boolean;
-      let hasList = false;
-      let hasActionItem = false;
-      let qn = 0; //question number from 1
-      let on = 0; //option number
-      let answers: number[] = [];
-      loop: for (let j = i + 1; j < blocks.length; j++) {
-        const next = get(j);
-        sw: switch (next.type) {
-          case 'p':
-            if (next.listStyleType === 'disc') {
-              element.questions.push(next.children[0].text as string);
-              hasList = true;
-              if (answers.length > 0) element.answers.push(answers as never);
-              answers = [];
-              on = 0;
-              qn++;
-            } else if (
-              !(
-                !isNaN(parseFloat(next.children[0].text as string)) &&
-                parseFloat(next.children[0].text as string)
-              ) &&
-              next.children[0].text !== ''
-            ) {
-              element.telems.push(next);
-            }
-            break;
-          case 'action_item':
-            hasActionItem = true;
-            on++;
-            if (qn <= 1) {
-              element.options.push(next.children[0].text as string);
-            }
-            if (next.checked) answers.push(on);
-            break;
-          case 'h2':
-            break loop;
-          default:
-            element.telems.push(next);
-            break;
-        }
-      }
-      if (element.answers.length === 0) element.answers = answers;
-      else element.answers.push(answers as never);
-      if (bold) {
-        element.type = 'paragraph';
-        element.answers = element.questions;
-        element.questions = [];
-        return element;
-      }
-      if (hasList) {
-        if (hasActionItem) {
-          element.type = 'matrix';
-          return element;
-        }
-      } else {
-        if (hasActionItem) {
-          element.type = 'radio';
-          return element;
-        }
-      }
-      element.type = 'text';
-      element.answers = element.questions;
-      element.questions = [];
-      return element;
-    },
-    [blocks.length, get]
-  );
-
-  // updated with useEffect
-  useEffect(() => {
-    if (page !== 'editor') return;
-    let isMounted = true;
-    const processBlocks = () => {
-      if (blocks.length <= 1) return; //!isMounted omitted
-      let _elements = blocks.map((block, i) => {
-        switch (block.type) {
-          // case 'h1':
-          //   return (
-          //     <h1
-          //       key={i}
-          //       className="scroll-m-20 text-2xl font-extrabold tracking-tight lg:text-5xl"
-          //     >
-          //       {block.children[0].text as string}
-          //     </h1>
-          //   );
-          case 'h2':
-            let elem = identify(i);
-            if (!elem) return undefined;
-            return elem;
-          default:
-            return undefined;
-        }
-      });
-      //filter null
-      let elements: Element[] = _elements.filter((e) => {
-        return e !== undefined;
-      }) as Element[];
-      const elemSave: ElementSaveData = {
-        id: id,
-        title: blocks[0].children[0].text as string,
-        elements: elements,
-        updatedAt: new Date(),
-      };
-      setElemSave(elemSave);
-
-      let bstr = JSON.stringify(blocks);
-      let estr = JSON.stringify(elemSave);
-      //convert this as text file
-      let bblob = new Blob([bstr], { type: 'text/plain' });
-      let eblob = new Blob([estr], { type: 'text/plain' });
-      const formData = new FormData();
-      formData.append('save', bblob, `${id}_save.json`);
-      formData.append('elem', eblob, `${id}_elem.json`);
-      const f = async () => {
-        console.log('uploading');
-        const res = await (
-          await fetch('/api/editor', {
-            method: 'PUT',
-            body: formData,
-          })
-        ).json();
-        if (res.status === 'success') {
-          console.log(res.surl);
-        } else {
-          console.error(res);
-        }
-        if (!attr) return;
-        const newAttr: ExamAttr = {
-          id: id,
-          title: elemSave.title,
-          status: attr.status,
-          owner: attr.owner,
-          createdAt: attr.createdAt,
-          lastEditedAt: new Date(),
-          elemRef: attr.elemRef,
-          saveRef: attr.saveRef,
-          timeLimit: attr.timeLimit,
-        };
-        setAttr(newAttr);
-      };
-      f();
-    };
-
-    const timeoutId = setTimeout(processBlocks, 2000); // seconds
-    return () => {
-      isMounted = false;
-      clearTimeout(timeoutId);
-    };
-  }, [blocks, identify]);
 
   useEffect(() => {
     if (!attr) return;
@@ -313,13 +110,16 @@ export const EditorContextProvider = ({
 
   const value: EditorContextValue = {
     id,
-    blocks,
-    setBlocks,
+    page,
     elemSave,
     setElemSave,
     attr,
     setAttr,
     ready,
+    status,
+    setStatus,
+    autosave,
+    setAutosave,
   };
 
   // store cache to local storage

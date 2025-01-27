@@ -8,4 +8,6 @@ export type ExamAttr = {
   elemRef: string;
   saveRef: string;
   timeLimit: number;
+  examStartAt: Date;
+  examEndAt: Date;
 };

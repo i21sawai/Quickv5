@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Label } from '@radix-ui/react-dropdown-menu';
 
 import { Element } from '@/types/element';
@@ -17,12 +17,14 @@ import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Textarea } from '../ui/textarea';
 
 export const FormElemQRenderer = ({
-  element,
-  setElement,
+  _element,
+  setNewElement,
 }: {
-  element: Element;
-  setElement: (e: Element) => void;
+  _element: Element;
+  setNewElement: (e: Element) => void;
 }) => {
+  const [element, setElement] = useState(_element);
+
   switch (element.type) {
     case 'text':
       return (
@@ -52,7 +54,7 @@ export const FormElemQRenderer = ({
           <Textarea
             value={element.answers[0] as string}
             onChange={(e) => {
-              setElement({ ...element, answers: [e.target.value] });
+              //setElement({ ...element, answers: [e.target.value] });
             }}
             disabled={element.readonly}
           />
@@ -121,9 +123,17 @@ export const FormElemQRenderer = ({
                       `${(element.answers as number[][])[i] ? (element.answers as number[][])[i][0] || 0 : 0}` as string
                     }
                     onValueChange={(value: any) => {
-                      const answers = element.answers as number[][];
-                      answers[i] = [parseInt(value)];
-                      setElement({ ...element, answers });
+                      const _answers = element.answers as number[][];
+                      //fill up all element with null or value
+                      console.log(_answers);
+                      for (let i = 0; i < element.questions.length; i++) {
+                        if (!_answers[i]) {
+                          _answers[i] = [-1];
+                        }
+                      }
+                      _answers[i] = [parseInt(value)];
+                      console.log(_answers);
+                      setElement({ ...element, answers: _answers });
                     }}
                     className={
                       'flex justify-end gap-[48px] px-3 md:gap-[96px] md:px-8 '

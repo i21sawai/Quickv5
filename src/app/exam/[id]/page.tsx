@@ -1,31 +1,40 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { makeid } from '@/utils/str';
 import { useSession } from 'next-auth/react';
 
+import { ElementSaveData } from '@/types/element';
 import { AnswerKey, Response } from '@/types/response';
 import { Button } from '@/components/ui/button';
 import { useEditorContext } from '@/components/context/editor';
 import { FormRenderer } from '@/components/organisms/formRenderer';
 
 export default function IndexPage() {
-  const { blocks, setBlocks, elemSave, setElemSave, ready, id, attr } =
-    useEditorContext();
+  const { elemSave, setElemSave, ready, id, attr } = useEditorContext();
+  const [newElemSave, setNewElemSave] = useState<ElementSaveData | undefined>();
   const [status, setStatus] = useState<'WAITING' | 'RESPONDING' | 'FINISHED'>(
     'WAITING'
   );
+  const [acceptStatus, setAcceptStatus] = useState<
+    'ACCEPTING' | 'LATE' | 'EARLY' | 'LOADING'
+  >('LOADING');
   const { data: session } = useSession();
   const router = useRouter();
   const submitting = useRef(false);
   const [deadline, setDeadline] = useState<Date | undefined>();
-  const [timeNotice, setTimeNotice] = useState<string>('');
+  const [timeNotice, setTimeNotice] = useState<string>('読み込み中...');
+
+  useEffect(() => {
+    if (!elemSave || newElemSave) return;
+    setNewElemSave({ ...elemSave });
+  }, [elemSave]);
 
   const response = useMemo(() => {
-    if (!elemSave) return;
-    const answers: AnswerKey[] = elemSave.elements.map((e) => {
+    if (!newElemSave) return;
+    const answers: AnswerKey[] = newElemSave.elements.map((e) => {
       return {
         id: e.id,
         type: e.type,
@@ -41,11 +50,29 @@ export default function IndexPage() {
       submitTime: new Date(),
     };
     return res;
-  }, [elemSave]);
+  }, [newElemSave]);
 
   const submit = async () => {
     if (submitting.current) return;
+    if (!response) return;
+    if (!newElemSave) return;
     submitting.current = true;
+    //fill up empty answers
+    response.answers = response.answers.map((a, i) => {
+      const type = newElemSave?.elements[i].type;
+      if (a.answers.length === 0) {
+        if (type === 'text' || type === 'paragraph') {
+          a.answers = ['未回答'];
+        } else if (type === 'radio') {
+          a.answers = [-1];
+        } else {
+          a.answers = Array(newElemSave.elements[i].questions.length).fill([
+            -1,
+          ]);
+        }
+      }
+      return a;
+    });
     const res = await fetch('/api/exam/response', {
       method: 'POST',
       headers: {
@@ -56,7 +83,7 @@ export default function IndexPage() {
     if (res.status === 200) {
       //router push with searchParam
       router.push(
-        `/message?title=${elemSave?.title}&message=${'回答が送信されました。お疲れ様でした。'}`
+        `/message?title=${newElemSave?.title}&message=${'回答が送信されました。お疲れ様でした。'}`
       );
     } else {
       alert('送信に失敗しました。');
@@ -65,8 +92,11 @@ export default function IndexPage() {
   };
 
   const onStartExam = () => {
+    if (!attr) return;
     setStatus('RESPONDING');
-    const _deadline = new Date(Date.now() + (attr?.timeLimit || 0) * 60 * 1000);
+
+    //const _deadline = new Date(Date.now() + (attr?.timeLimit || 0) * 60 * 1000);
+    const _deadline = attr.examEndAt;
     setDeadline(_deadline);
     const timer = setInterval(() => {
       const now = new Date();
@@ -89,13 +119,37 @@ export default function IndexPage() {
     }, 1000);
   };
 
+  const formatTime = (date: Date): string => {
+    return `${date.getHours()}時${date.getMinutes()}分`;
+  };
+
+  //check every one second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (!attr) return;
+      if (attr.examStartAt > new Date()) {
+        setAcceptStatus('EARLY');
+      } else if (attr.examEndAt < new Date()) {
+        setAcceptStatus('LATE');
+      } else {
+        setAcceptStatus('ACCEPTING');
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [attr]);
+
   if (status === 'WAITING') {
     if (!attr) return <div>loading...</div>;
-    if (attr?.status !== '回答募集中') {
+    if (acceptStatus !== 'ACCEPTING') {
       return (
         <div className="flex h-[480px] flex-col items-center justify-center gap-32 p-4">
           <h1 className="text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
-            現在回答を受け付けていません。試験官にお問い合わせください。
+            {/* 現在回答を受け付けていません。試験官にお問い合わせください。 */}
+            {acceptStatus === 'EARLY'
+              ? `試験開始は${formatTime(attr.examStartAt)}です`
+              : acceptStatus === 'LATE'
+                ? `試験は${formatTime(attr.examEndAt)}に終了しています`
+                : '受付状況読み込み中...'}
           </h1>
           <Button asChild>
             <Link href="/">トップページに戻る</Link>
@@ -108,10 +162,10 @@ export default function IndexPage() {
       <div className="flex h-[480px] flex-col items-center justify-center gap-32 p-4">
         <div className="flex flex-col items-center gap-4">
           <h1 className="text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
-            試験官の指示があるまでお待ちください。
+            {`${attr?.title}が開始できます`}
           </h1>
           <p className="max-w-[700px] text-lg text-muted-foreground">
-            試験時間は{attr?.timeLimit}分です。
+            試験終了時間は{formatTime(attr?.examEndAt)}です。
           </p>
         </div>
         <Button onClick={() => onStartExam()}>回答を開始する</Button>
@@ -128,7 +182,11 @@ export default function IndexPage() {
           <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight pb-8">
             {timeNotice}
           </h3>
-          <FormRenderer elemSave={elemSave} setElemSave={setElemSave} />
+          <FormRenderer
+            elemSave={elemSave}
+            setElemSave={setElemSave}
+            setNewElemSave={setNewElemSave}
+          />
           <div className="flex h-[120px] items-end justify-end ">
             <Button variant="default" onClick={submit}>
               提出
