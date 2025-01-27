@@ -64,12 +64,14 @@ export default function IndexPage() {
     if (!response) return;
     if (!elemSave) return;
     if (total !== undefined) return;
+    if (elemSave.elements[0].trueAnswers === undefined) return;
     console.log(elemSave, response);
 
     let _total = 0;
     response.answers.forEach((answer, i) => {
       const question = elemSave.elements[i];
-      const trueAnswer = question.answers;
+      const trueAnswer = question.trueAnswers!;
+      if (!trueAnswer) alert('正答が設定されていません');
       switch (answer.type) {
         case 'radio':
           const correct = trueAnswer[0];
@@ -81,7 +83,6 @@ export default function IndexPage() {
         case 'matrix':
           trueAnswer.forEach((correct, i) => {
             const a = (answer.answers as number[][])[i][0];
-            console.log(a === (correct as number[])[0]);
             if (a === (correct as number[])[0]) {
               _total += question.point / trueAnswer.length;
             }
@@ -102,7 +103,7 @@ export default function IndexPage() {
           console.error('Not implemented');
       }
     });
-    setTotal(total);
+    setTotal(_total);
   }, [response, elemSave]);
 
   if (!ready.current) return <div>Loading...</div>;
@@ -114,7 +115,7 @@ export default function IndexPage() {
       <div className="flex w-full min-w-0 max-w-full justify-center">
         <div className="w-full max-w-screen-md p-0 md:p-8">
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl mb-16">
-            {total}点
+            {total !== undefined ? `${total}点` : '採点中...'}
           </h1>
           <FormRenderer elemSave={_elemSave} setElemSave={_setElemSave} />
         </div>
