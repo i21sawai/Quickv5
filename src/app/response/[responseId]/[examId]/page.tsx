@@ -16,7 +16,7 @@ export default function IndexPage() {
   const [response, setResponse] = useState<Response | undefined>();
   const ready = useRef(false);
   const [_elemSave, _setElemSave] = useState<ElementSaveData | undefined>();
-  const calculated = useRef(false);
+  const [total, setTotal] = useState<number | undefined>();
 
   useEffect(() => {
     const f = async () => {
@@ -59,14 +59,14 @@ export default function IndexPage() {
     _setElemSave(elemSave);
   }, [elemSave, response]);
 
-  const total = useMemo(() => {
+  useEffect(() => {
     //calculate point
     if (!response) return;
     if (!elemSave) return;
-    if (calculated.current) return;
+    if (total !== undefined) return;
     console.log(elemSave, response);
 
-    let total = 0;
+    let _total = 0;
     response.answers.forEach((answer, i) => {
       const question = elemSave.elements[i];
       const trueAnswer = question.answers;
@@ -75,7 +75,7 @@ export default function IndexPage() {
           const correct = trueAnswer[0];
           const a = answer.answers[0];
           if (a.toString() === correct.toString()) {
-            total += question.point;
+            _total += question.point;
           }
           break;
         case 'matrix':
@@ -83,7 +83,7 @@ export default function IndexPage() {
             const a = (answer.answers as number[][])[i][0];
             console.log(a === (correct as number[])[0]);
             if (a === (correct as number[])[0]) {
-              total += question.point / trueAnswer.length;
+              _total += question.point / trueAnswer.length;
             }
           });
           break;
@@ -93,7 +93,7 @@ export default function IndexPage() {
             const correct = trueAnswer[i];
             const a = answer.answers[i];
             if (a === correct) {
-              total += question.point;
+              _total += question.point;
               break;
             }
           }
@@ -102,8 +102,7 @@ export default function IndexPage() {
           console.error('Not implemented');
       }
     });
-    calculated.current = true;
-    return total;
+    setTotal(total);
   }, [response, elemSave]);
 
   if (!ready.current) return <div>Loading...</div>;
