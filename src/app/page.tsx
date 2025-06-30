@@ -32,7 +32,7 @@ export default function Page() {
   //!TODO Replace with firestore
   const onSubmit = async () => {
     const ereq = await fetch(
-      `https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${examId}_elem.json?ignoreCache=1`
+      `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${examId}_elem.json?ignoreCache=1`
     );
     if (ereq.status === 200) {
       router.push(`/exam/${examId}`);

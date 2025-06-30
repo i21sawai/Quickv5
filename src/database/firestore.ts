@@ -12,7 +12,7 @@ if (!getApps().length) {
       projectId: process.env.SA_PROJECT_ID,
       clientEmail: process.env.SA_CLIENT_EMAIL,
       //privateKey: process.env.SA_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-      privateKey: process.env.SA_PRIVATE_KEY,
+      privateKey: process.env.SA_PRIVATE_KEY?.replace(/\\n/g, '\n'),
     }),
   });
   const db = getFirestore();

@@ -65,7 +65,7 @@ export const EditorContextProvider = ({
     const f = async () => {
       if (id === 'editor') return;
       const ereq = await fetch(
-        `https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${id}_elem.json?ignoreCache=1`
+        `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${id}_elem.json?ignoreCache=1`
       );
       if (ereq.status === 200) {
         let elem = (await ereq.json()) as ElementSaveData;

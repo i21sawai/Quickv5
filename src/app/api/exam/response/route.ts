@@ -51,7 +51,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
     ).data();
 
     const ereq = await fetch(
-      `https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${res.examId}_elem.json?ignoreCache=1`
+      `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${res.examId}_elem.json?ignoreCache=1`
     );
     if (ereq.status !== 200) return;
     let elem = (await ereq.json()) as ElementSaveData;

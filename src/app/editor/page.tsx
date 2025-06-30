@@ -35,7 +35,7 @@ export default function Page() {
   const router = useRouter();
   const onSubmit = async () => {
     const ereq = await fetch(
-      `https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${examId}_elem.json?ignoreCache=1`
+      `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${examId}_elem.json?ignoreCache=1`
     );
     if (ereq.status === 200) {
       alert('試験IDが既に使われています');
@@ -50,8 +50,8 @@ export default function Page() {
           lastEditedAt: new Date(),
           owner: session?.user?.name,
           status: '下書き',
-          elemRef: `https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${examId}_save.json?ignoreCache=1`,
-          saveRef: `https://storage.googleapis.com/sandbox-35d1d.appspot.com/WebExam%2Feditor%2F${examId}_elem.json?ignoreCache=1`,
+          elemRef: `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${examId}_save.json?ignoreCache=1`,
+          saveRef: `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${examId}_elem.json?ignoreCache=1`,
           timeLimit: 60,
           examStartAt: new Date(),
           examEndAt: new Date(),
