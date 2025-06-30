@@ -24,7 +24,7 @@ export default function AuthRedirect({ children }: AuthRedirectProps) {
     <div className="flex h-screen w-screen justify-center">
       <div className="flex flex-col justify-center">
         <Spinner size="large" />
-        <p>Loading...</p>
+        <p>読み込み中...</p>
       </div>
     </div>
   );
