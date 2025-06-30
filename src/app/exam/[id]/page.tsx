@@ -96,8 +96,7 @@ export default function IndexPage() {
     if (!attr) return;
     setStatus('RESPONDING');
 
-    //const _deadline = new Date(Date.now() + (attr?.timeLimit || 0) * 60 * 1000);
-    const _deadline = attr.examEndAt;
+    const _deadline = new Date(Date.now() + (attr?.timeLimit || 60) * 60 * 1000);
     setDeadline(_deadline);
     const timer = setInterval(() => {
       const now = new Date();
@@ -166,7 +165,7 @@ export default function IndexPage() {
             {`${attr?.title}が開始できます`}
           </h1>
           <p className="max-w-[700px] text-lg text-muted-foreground">
-            試験終了時間は{formatTime(attr?.examEndAt)}です。
+            制限時間は{attr?.timeLimit}分です。試験終了時間は{formatTime(attr?.examEndAt)}です。
           </p>
         </div>
         <Button onClick={() => onStartExam()}>回答を開始する</Button>

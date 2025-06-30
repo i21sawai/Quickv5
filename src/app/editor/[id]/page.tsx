@@ -100,6 +100,86 @@ export default function IndexPage() {
               />
             </div>
           )}
+          {attr && (
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label>制限時間（分）</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  value={attr.timeLimit}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (!isNaN(value) && value > 0) {
+                      setAttr({ ...attr, timeLimit: value });
+                    }
+                  }}
+                  className="w-24"
+                  min="1"
+                />
+                <span className="text-sm text-muted-foreground">分</span>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAttr({ ...attr, timeLimit: Math.max(1, attr.timeLimit - 10) })}
+                >
+                  -10分
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAttr({ ...attr, timeLimit: Math.max(1, attr.timeLimit - 5) })}
+                >
+                  -5分
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAttr({ ...attr, timeLimit: attr.timeLimit + 5 })}
+                >
+                  +5分
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAttr({ ...attr, timeLimit: attr.timeLimit + 10 })}
+                >
+                  +10分
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setAttr({ ...attr, timeLimit: 30 })}
+                >
+                  30分
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setAttr({ ...attr, timeLimit: 60 })}
+                >
+                  60分
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setAttr({ ...attr, timeLimit: 90 })}
+                >
+                  90分
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setAttr({ ...attr, timeLimit: 120 })}
+                >
+                  120分
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex max-w-[1336px]">
