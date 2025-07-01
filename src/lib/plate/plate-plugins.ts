@@ -41,6 +41,7 @@ import {
   createPlugins,
   isBlockAboveEmpty,
   isSelectionAtBlockStart,
+  PlateEditor,
   PlateElement,
   PlateLeaf,
   RenderAfterEditable,
@@ -344,7 +345,7 @@ export const plugins = createPlugins(
     }),
     createTabbablePlugin({
       options: {
-        query: (editor) => {
+        query: (editor: PlateEditor) => {
           if (isSelectionAtBlockStart(editor)) return false;
 
           return !someNode(editor, {

@@ -8,6 +8,7 @@ import {
   ComboboxContentItemProps,
   ComboboxContentProps,
   ComboboxProps,
+  TComboboxItem,
   useActiveComboboxStore,
   useComboboxContent,
   useComboboxContentState,
@@ -53,7 +54,7 @@ export function ComboboxContent(props: ComboboxContentProps) {
 
   const editor = useEditorRef();
 
-  const filteredItems = useComboboxSelectors.filteredItems();
+  const filteredItems = useComboboxSelectors.filteredItems() as TComboboxItem[];
   const activeComboboxStore = useActiveComboboxStore()!;
 
   const state = useComboboxContentState({ items, combobox });
@@ -78,7 +79,7 @@ export function ComboboxContent(props: ComboboxContentProps) {
         >
           {Component ? Component({ store: activeComboboxStore }) : null}
 
-          {filteredItems.map((item, index) => (
+          {filteredItems.map((item: TComboboxItem, index) => (
             <ComboboxItem
               key={item.key}
               item={item}
