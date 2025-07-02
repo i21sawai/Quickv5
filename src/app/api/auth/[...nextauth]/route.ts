@@ -39,14 +39,7 @@ const handler = NextAuth({
   // ... 既存の認証ロジック（ユーザー名とパスワードの検証など）
 
   // ユーザーが見つからなかった場合のログも強化
-  if (!userDB) {
-    console.log('User not found in spreadsheet for username:', credentials?.username);
-  } else {
-    // パスワード不一致の場合のログも追加
-    if (userDB.get('パスワード') !== credentials?.password) {
-      console.log('Password mismatch for user:', credentials?.username);
-    }
-  }
+
 
   console.log('--- End NextAuth Authorize Function Debug Log ---');
         // Add logic here to look up the user from the credentials supplied
