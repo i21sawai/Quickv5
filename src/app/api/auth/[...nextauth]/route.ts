@@ -46,7 +46,7 @@ async authorize(credentials, req) {
           // 環境変数からサービスアカウントのメールアドレスと秘密鍵を取得
           // 秘密鍵はVercelでエスケープされる場合があるため、改行コードを正しく処理
           email: process.env.SA_CLIENT_EMAIL,
-          key: process.env.SA_PRIVATE_KEY?.replace(/\\n/g, '\n'), // ここで \n を実際の改行に置換
+          key: process.env.SA_PRIVATE_KEY, // ここで \n を実際の改行に置換
           scopes: ['https://www.googleapis.com/auth/spreadsheets'], // スプレッドシートAPIへのアクセス権限
         });
 
