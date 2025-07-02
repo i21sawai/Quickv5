@@ -30,6 +30,7 @@ export default function Page() {
     data: tableData,
     error,
     isLoading,
+    mutate,
   } = useSWR('/api/editor/list', fetcher, { revalidateOnReconnect: true });
 
   const router = useRouter();
@@ -63,6 +64,7 @@ export default function Page() {
         alert('エラーが発生しました');
         return;
       }
+      mutate('/api/editor/list', null, { revalidate: true }); 
       router.push(`/editor/${examId}`);
     }
   };
