@@ -14,6 +14,41 @@ const handler = NextAuth({
         password: { label: 'パスワード', type: 'password' },
       },
       async authorize(credentials, req) {
+
+        console.log('--- NextAuth Authorize Function Debug Log ---');
+  console.log('SA_CLIENT_EMAIL:', process.env.SA_CLIENT_EMAIL);
+  console.log('USER_SPREADSHEET_ID:', process.env.USER_SPREADSHEET_ID);
+
+  // SA_PRIVATE_KEY は非常に機密性が高いため、文字列全体をログに出力するのは避けるべきです。
+  // 存在確認だけであれば、以下のように部分的に表示するか、存在有無だけをログに出します。
+  console.log('SA_PRIVATE_KEY_EXISTS:', !!process.env.SA_PRIVATE_KEY);
+  if (process.env.SA_PRIVATE_KEY) {
+      // 最初の30文字と末尾を示す...だけをログに出力
+      console.log('SA_PRIVATE_KEY_START:', process.env.SA_PRIVATE_KEY.substring(0, 30) + '...');
+  }
+
+  // NEXTAUTH_SECRET も確認できますが、通常 authorize 関数内で直接使うことは稀です。
+  // セッションの暗号化に使われるため、NextAuthの内部で自動的に参照されます。
+  // ただし、設定されているか確認したい場合は以下のようにできます。
+  console.log('NEXTAUTH_SECRET_IS_SET:', !!process.env.NEXTAUTH_SECRET);
+  if (!process.env.NEXTAUTH_SECRET) {
+      console.log('WARNING: NEXTAUTH_SECRET is not set!');
+  }
+
+
+  // ... 既存の認証ロジック（ユーザー名とパスワードの検証など）
+
+  // ユーザーが見つからなかった場合のログも強化
+  if (!userDB) {
+    console.log('User not found in spreadsheet for username:', credentials?.username);
+  } else {
+    // パスワード不一致の場合のログも追加
+    if (userDB.get('パスワード') !== credentials?.password) {
+      console.log('Password mismatch for user:', credentials?.username);
+    }
+  }
+
+  console.log('--- End NextAuth Authorize Function Debug Log ---');
         // Add logic here to look up the user from the credentials supplied
         let user:
           | {
