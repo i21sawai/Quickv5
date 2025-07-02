@@ -64,7 +64,7 @@ export default function Page() {
         alert('エラーが発生しました');
         return;
       }
-      mutate('/api/editor/list', null, { revalidate: true }); 
+      mutate(null, { revalidate: true }); 
       router.push(`/editor/${examId}`);
     }
   };
