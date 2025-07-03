@@ -76,7 +76,7 @@ export default function IndexPage() {
         case 'radio':
           const correct = trueAnswer[0];
           const a = answer.answers[0];
-          if (a.toString() === correct.toString()) {
+          if (a !== undefined && correct !== undefined && a.toString() === correct.toString()) {
             _total += question.point;
           }
           break;
