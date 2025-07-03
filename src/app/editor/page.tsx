@@ -92,6 +92,7 @@ export default function Page() {
     <div className="flex flex-col items-center justify-center w-full h-full space-y-4 mt-16">
       <div className="max-w-7xl flex-col flex gap-4">
         <h1 className="text-4xl font-bold">新しい試験を作成</h1>
+        <h1 className="text-1xl font-bold">既存の試験を編集する場合、試験IDの欄に既存のIDを入力してください</h1>
         <Input
           placeholder="タイトル"
           value={title}
