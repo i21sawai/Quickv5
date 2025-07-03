@@ -1,7 +1,7 @@
 // redirect to /editor/[id]
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import useSWR from 'swr';
@@ -21,6 +21,7 @@ export default function Page() {
   const { data: session, status } = useSession();
   const [title, setTitle] = useState<string>('');
   const [examId, setExamId] = useState<string>('');
+  const [existingExam, setExistingExam] = useState<boolean>(false);
   const fetcher = (url: string) =>
     fetch(url).then(async (res) => {
       const json = (await res.json()).reverse();
@@ -33,12 +34,32 @@ export default function Page() {
   } = useSWR('/api/editor/list', fetcher, { revalidateOnReconnect: true });
 
   const router = useRouter();
+
+  // Check if exam ID already exists
+  useEffect(() => {
+    const checkExamExists = async () => {
+      if (examId) {
+        const ereq = await fetch(
+          `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${examId}_elem.json?ignoreCache=1`
+        );
+        setExistingExam(ereq.status === 200);
+      } else {
+        setExistingExam(false);
+      }
+    };
+    checkExamExists();
+  }, [examId]);
+
+  const onEdit = () => {
+    router.push(`/editor/${examId}`);
+  };
+
   const onSubmit = async () => {
     const ereq = await fetch(
       `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${examId}_elem.json?ignoreCache=1`
     );
     if (ereq.status === 200) {
-      alert('試験IDが既に使われています');
+      alert('既に使われている試験IDです。再編集する場合、既存の試験を編集ボタンを押してください。');
       //router.push(`/exam/${examId}`);
     } else {
       const res = await fetch('/api/editor/attr', {
@@ -84,6 +105,11 @@ export default function Page() {
           />
           <Button onClick={() => onSubmit()}>試験を作成</Button>
         </div>
+        {existingExam && (
+          <Button onClick={onEdit} variant="secondary">
+            既存の試験「{examId}」を編集
+          </Button>
+        )}
         {!isLoading && <Examtable columns={columns} data={tableData} />}
       </div>
     </div>
