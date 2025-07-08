@@ -29,13 +29,17 @@ export default function Page() {
     revalidateOnReconnect: true,
   });
 
-  //!TODO Replace with firestore
   const onSubmit = async () => {
-    const ereq = await fetch(
-      `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${examId}_elem.json?ignoreCache=1`
-    );
-    if (ereq.status === 200) {
-      router.push(`/exam/${examId}`);
+    // Firestore経由で試験IDの存在を確認
+    const attrReq = await fetch(`/api/editor/attr?id=${examId}`);
+    if (attrReq.status === 200) {
+      const attrData = await attrReq.json();
+      // elemRefが存在し、空でないことを確認
+      if (attrData.elemRef && attrData.elemRef !== '') {
+        router.push(`/exam/${examId}`);
+      } else {
+        alert('試験IDは存在しますが、試験内容がまだ保存されていません。試験作成者に確認してください。');
+      }
     } else {
       alert('試験IDが存在しません');
     }
