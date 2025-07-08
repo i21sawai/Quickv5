@@ -64,6 +64,7 @@ export const EditorContextProvider = ({
   useEffect(() => {
     const f = async () => {
       if (id === 'editor') return;
+      setReady(false);
       const ereq = await fetch(
         `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${id}_elem.json?ignoreCache=1`
       );
@@ -93,7 +94,7 @@ export const EditorContextProvider = ({
       setReady(true);
     };
     f();
-  }, [id]);
+  }, [id, page]);
 
   const [elemSave, setElemSave] = useState<ElementSaveData | undefined>();
 
