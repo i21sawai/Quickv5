@@ -36,11 +36,22 @@ export default function Result() {
   const { elemSave } = useEditorContext();
   const path = usePathname();
   const id = path.split('/').pop() || '';
-  const fetcher = (url: string) => fetch(url).then((res) => res.json());
-  const { data, error }: { data: { data: AllResponse }; error: any } = useSWR(
+  const fetcher = (url: string) => {
+    console.log('Fetching:', url);
+    return fetch(url).then(async (res) => {
+      const json = await res.json();
+      console.log('Result API response:', json);
+      return json;
+    });
+  };
+  const { data, error, mutate }: { data: { status: number; data?: AllResponse } | undefined; error: any; mutate: any } = useSWR(
     `/api/result?id=${id}`,
     fetcher,
-    { revalidateOnReconnect: true }
+    { 
+      revalidateOnReconnect: true,
+      revalidateOnFocus: true,
+      refreshInterval: 5000 // 5秒ごとに自動更新
+    }
   );
 
   const summarizeRadio = (correct: number[], data: number[][]) => {
@@ -150,21 +161,28 @@ export default function Result() {
     radar: { [key: string]: number };
     radarMax: { [key: string]: number };
   };
-  const overview = () => {
-    if (!data) return;
+  
+  const overviewData = useMemo(() => {
+    if (!data?.data?.userIdList || !data?.data?.answersList || !elemSave) return null;
+    
     let result: Overview = {
       pointDist: new Array(data.data.userIdList.length).fill(0),
       radar: {},
       radarMax: {},
       possiblePoint: 0,
     };
+    
     data.data.answersList.forEach((answer) => {
       let id = answer.id;
       //get corresponding from elemSave
       let question = elemSave?.elements.find((elem) => elem.id === id);
-      if (!question) console.error('Question not found with id: ', id);
+      if (!question) {
+        console.error('Question not found with id: ', id);
+        return;
+      }
+      
       let average = 0;
-      switch (question?.type) {
+      switch (question.type) {
         case 'radio':
           let correct = answer.correctAnswers[0];
           answer.answersList.forEach((answers, i) => {
@@ -202,15 +220,21 @@ export default function Result() {
         default:
           console.error('Not implemented');
       }
-      average /= answer.answersList.length;
-      question?.tags.forEach((tag, i) => {
-        result.radar[tag] = average;
-        result.radarMax[tag] = question.point;
-        result.possiblePoint += question.point;
+      
+      if (answer.answersList.length > 0) {
+        average /= answer.answersList.length;
+      }
+      
+      question.tags?.forEach((tag) => {
+        result.radar[tag] = (result.radar[tag] || 0) + average;
+        result.radarMax[tag] = (result.radarMax[tag] || 0) + question.point;
       });
+      
+      result.possiblePoint += question.point;
     });
+    
     return result;
-  };
+  }, [data, elemSave]);
   const visualizeOverview = (overview?: Overview) => {
     if (!overview) return;
     console.log(overview);
@@ -321,23 +345,23 @@ export default function Result() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${elemSave?.id}_exam.json`;
+    a.download = `${id}_exam.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
   const onDownloadResult = () => {
-    if (!data) return;
+    if (!data?.data) return;
     const json = JSON.stringify(data.data);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${elemSave?.id}_result.json`;
+    a.download = `${id}_result.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
   const onDownloadResultAsCSV = () => {
-    if (!data) return;
+    if (!data?.data?.answersList || !data?.data?.userIdList) return;
     let res = 'ユーザーID,提出日時,提出ID,';
     let count = 1;
     //Making header
@@ -381,10 +405,65 @@ export default function Result() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${elemSave?.id}_result.csv`;
+    a.download = `${id}_result.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  if (!data && !error) {
+    return (
+      <div className="flex w-full min-w-0 max-w-full justify-center">
+        <div className="flex w-full max-w-screen-sm flex-col gap-8 p-0 md:p-16">
+          <p>データを読み込んでいます...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex w-full min-w-0 max-w-full justify-center">
+        <div className="flex w-full max-w-screen-sm flex-col gap-8 p-0 md:p-16">
+          <p>エラーが発生しました: {error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 404の場合（まだ誰も回答していない）
+  if (data?.status === 404) {
+    return (
+      <div className="flex w-full min-w-0 max-w-full justify-center">
+        <div className="flex w-full max-w-screen-sm flex-col gap-8 p-0 md:p-16">
+          <div className="flex w-full flex-col gap-2">
+            <h1 className="scroll-m-20 pb-2 text-4xl font-bold tracking-tight first:mt-0">
+              {elemSave?.title}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              まだ回答がありません（試験ID: {id}）
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              回答を提出した場合は、しばらく待ってからページを更新してください。
+            </p>
+          </div>
+          <div className="flex flex-row gap-4">
+            <Button asChild>
+              <Link href={`/editor/${id}`}>問題を見る</Link>
+            </Button>
+            <Button onClick={onDownloadExam} disabled={!elemSave}>
+              問題のダウンロード
+            </Button>
+            <Button disabled>
+              回答結果のダウンロード（回答がありません）
+            </Button>
+            <Button onClick={() => mutate()} variant="outline">
+              データを再取得
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full min-w-0 max-w-full justify-center">
@@ -393,18 +472,21 @@ export default function Result() {
           <h1 className="scroll-m-20 pb-2 text-4xl font-bold tracking-tight first:mt-0">
             {elemSave?.title}
           </h1>
+          <p className="text-sm text-muted-foreground">
+            回答数: {data?.data?.userIdList?.length || 0}人
+          </p>
         </div>
         <div className="flex flex-row gap-4">
           <Button asChild>
-            <Link href={`/editor/${elemSave?.id}`}>問題を見る</Link>
+            <Link href={`/editor/${id}`}>問題を見る</Link>
           </Button>
           <Button onClick={onDownloadExam}>問題のダウンロード</Button>
           <Button onClick={onDownloadResultAsCSV}>
             回答結果のダウンロード
           </Button>
         </div>
-        {visualizeOverview(overview())}
-        {data?.data.answersList?.map((question) => {
+        {overviewData && visualizeOverview(overviewData)}
+        {data?.data?.answersList?.map((question) => {
           return (
             <div key={question.id}>
               <h1 className="text-xl font-bold">{question.title}</h1>

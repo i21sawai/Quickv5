@@ -14,6 +14,7 @@ if (!getApps().length) {
       //privateKey: process.env.SA_PRIVATE_KEY?.replace(/\\n/g, "\n"),
       privateKey: process.env.SA_PRIVATE_KEY?.replace(/\\n/g, '\n'),
     }),
+    storageBucket: process.env.NEXT_PUBLIC_BUCKET_NAME,
   });
   const db = getFirestore();
   db.settings({ ignoreUndefinedProperties: true });

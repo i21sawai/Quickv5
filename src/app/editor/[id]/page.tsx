@@ -23,7 +23,7 @@ import { FormRenderer } from '@/components/organisms/formRenderer';
 import PlateEditor from '@/components/plate-editor';
 
 export default function IndexPage() {
-  const { elemSave, setElemSave, ready, attr, setAttr } = useEditorContext();
+  const { elemSave, setElemSave, ready, attr, setAttr, id } = useEditorContext();
   const { data, status } = useSession();
   const router = useRouter();
   const [update, setUpdate] = useState(0);
@@ -48,10 +48,10 @@ export default function IndexPage() {
           </p>
           <div className="flex gap-4">
             <Button asChild>
-              <Link href={`/exam/${elemSave?.id}`}>回答者用 : 回答ページ</Link>
+              <Link href={`/exam/${id}`}>回答者用 : 回答ページ</Link>
             </Button>
             <Button asChild>
-              <Link href={`/result/${elemSave?.id}`}>
+              <Link href={`/result/${id}`}>
                 管理者用 : 結果確認ページ
               </Link>
             </Button>

@@ -142,12 +142,15 @@ export async function POST(req: NextRequest, res: NextResponse) {
       allRes.responseIdList.push(res.id);
       allRes.submissionTimeList.push(res.submitTime);
       allRes.updateAt = res.submitTime;
+      console.log('[RESPONSE API] Setting all document for examId:', res.examId);
+      console.log('[RESPONSE API] AllResponse userIdList:', allRes.userIdList);
       await fs_e
         .doc(res.examId)
         .collection('responses')
         .withConverter(allResponseConverter)
         .doc('all')
         .set(allRes);
+      console.log('[RESPONSE API] Successfully saved all document');
     }
 
     return NextResponse.json({ status: 200 });

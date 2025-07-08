@@ -47,8 +47,10 @@ const noto = Noto_Sans_JP({
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <>
-      <html lang="en" suppressHydrationWarning>
-        <head />
+      <html lang="ja" suppressHydrationWarning>
+        <head>
+          <meta name="google" content="notranslate" />
+        </head>
         <body
           className={cn(
             `min-h-screen bg-background ${noto.className} antialiased`,
