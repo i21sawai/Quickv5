@@ -8,6 +8,8 @@ import { Plate, Value } from '@udecode/plate-common';
 import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { clientStorage } from '@/lib/firebase-client';
 
 import { Element, ElementSaveData } from '@/types/element';
 import { ExamAttr } from '@/types/exam';
@@ -45,19 +47,50 @@ export default function PlateEditor() {
 
   useEffect(() => {
     const f = async () => {
-      const sreq = await fetch(
-        //block
-        `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${id}_save.json?ignoreCache=1`
-      );
-      if (sreq.status === 200) {
-        const save = await sreq.json();
-        setBlocks(save);
+      // Use the saveRef URL from attr if available
+      if (attr && attr.saveRef) {
+        // Extract path from the Storage URL
+        const storageUrl = attr.saveRef;
+        let storagePath = '';
+        
+        if (storageUrl.includes('firebasestorage.app')) {
+          // Extract path after the bucket name
+          const match = storageUrl.match(/firebasestorage\.app\/(.+?)(?:\?|$)/);
+          if (match) {
+            storagePath = decodeURIComponent(match[1]);
+            // Remove the '/o/' prefix if present
+            if (storagePath.startsWith('o/')) {
+              storagePath = storagePath.substring(2);
+            }
+          }
+        } else if (storageUrl.includes('storage.googleapis.com')) {
+          // Extract path from Google Cloud Storage URL
+          const match = storageUrl.match(/storage\.googleapis\.com\/[^/]+\/(.+?)(?:\?|$)/);
+          if (match) {
+            storagePath = decodeURIComponent(match[1]);
+          }
+        }
+        
+        if (storagePath) {
+          const sreq = await fetch(`/api/storage/${storagePath}`);
+          if (sreq.status === 200) {
+            const save = await sreq.json();
+            setBlocks(save);
+          }
+        }
+      } else {
+        // Fallback: try to fetch from the old Google Cloud Storage location via API
+        const sreq = await fetch(`/api/storage/WebExam/editor/${id}_save.json`);
+        if (sreq.status === 200) {
+          const save = await sreq.json();
+          setBlocks(save);
+        }
       }
       setStatus('saved');
       setReady(true);
     };
     f();
-  }, [id]);
+  }, [id, attr?.saveRef, setStatus]);
 
   const get = useCallback(
     (i: number) => {
@@ -217,34 +250,75 @@ export default function PlateEditor() {
       formData.append('elem', eblob, `${id}_elem.json`);
       const f = async () => {
         console.log('uploading');
-        const res = await (
-          await fetch('/api/editor', {
-            method: 'PUT',
-            body: formData,
-          })
-        ).json();
-        if (res.status === 'success') {
-          console.log(res.surl);
-          setStatus('saved');
-        } else {
-          console.error(res);
+
+        try {
+          // blocksの内容を保存するファイル
+          const saveRefPath = `WebExam/editor/${id}_save.json`;
+          const saveFileRef = ref(clientStorage, saveRefPath);
+          const saveSnapshot = await uploadBytes(saveFileRef, bblob);
+          const surl = await getDownloadURL(saveSnapshot.ref);
+
+          // elemSaveの内容を保存するファイル
+          const elemRefPath = `WebExam/editor/${id}_elem.json`;
+          const elemFileRef = ref(clientStorage, elemRefPath);
+          const elemSnapshot = await uploadBytes(elemFileRef, eblob);
+          const eurl = await getDownloadURL(elemSnapshot.ref);
+
+          // 小さなメタデータだけを /api/editor/attr (POST) に送信
+          const res = await fetch('/api/editor/attr', {
+            method: 'POST',
+            body: JSON.stringify({
+              id: id,
+              title: elemSave.title,
+              status: attr?.status || 'draft',
+              owner: attr?.owner || '',
+              createdAt: attr?.createdAt || new Date(),
+              lastEditedAt: new Date(),
+              elemRef: eurl,
+              saveRef: surl,
+              timeLimit: attr?.timeLimit || 0,
+              examStartAt: attr?.examStartAt || null,
+              examEndAt: attr?.examEndAt || null,
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (res.status === 400) {
+            alert('IDが既に使われています');
+            setStatus('error');
+          } else if (res.status !== 200) {
+            const errorRes = await res.json();
+            console.error('Error saving attr to Firestore:', errorRes);
+            alert('試験属性の保存中にエラーが発生しました。');
+            setStatus('error');
+          } else {
+            console.log('Firestore attr updated successfully. Elem URL:', eurl, 'Save URL:', surl);
+            setStatus('saved');
+            if (attr) {
+              const newAttr: ExamAttr = {
+                id: id,
+                title: elemSave.title,
+                status: attr.status,
+                owner: attr.owner,
+                createdAt: attr.createdAt,
+                lastEditedAt: new Date(),
+                elemRef: eurl,
+                saveRef: surl,
+                timeLimit: attr.timeLimit,
+                examStartAt: attr.examStartAt,
+                examEndAt: attr.examEndAt,
+              };
+              setAttr(newAttr);
+            }
+          }
+
+        } catch (e) {
+          console.error('File upload or Firestore update failed:', e);
           setStatus('error');
+          alert('ファイルのアップロードまたは試験の保存中にエラーが発生しました。詳細はコンソールを確認してください。');
         }
-        if (!attr) return;
-        const newAttr: ExamAttr = {
-          id: id,
-          title: elemSave.title,
-          status: attr.status,
-          owner: attr.owner,
-          createdAt: attr.createdAt,
-          lastEditedAt: new Date(),
-          elemRef: attr.elemRef,
-          saveRef: attr.saveRef,
-          timeLimit: attr.timeLimit,
-          examStartAt: attr.examStartAt,
-          examEndAt: attr.examEndAt,
-        };
-        setAttr(newAttr);
       };
       f();
       setChanged(false);
@@ -272,6 +346,7 @@ export default function PlateEditor() {
     <DndProvider backend={HTML5Backend}>
       <CommentsProvider users={commentsUsers} myUserId={myUserId}>
         <Plate
+          key={id}
           plugins={plugins}
           initialValue={blocks}
           onChange={(b) => {

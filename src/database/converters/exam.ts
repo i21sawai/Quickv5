@@ -31,8 +31,8 @@ export const examAttrConverter = {
       elemRef: data.elemRef,
       saveRef: data.saveRef,
       timeLimit: data.timeLimit,
-      examStartAt: data.examStartAt.toDate(),
-      examEndAt: data.examEndAt.toDate(),
+      examStartAt: data.examStartAt ? data.examStartAt.toDate() : undefined,
+      examEndAt: data.examEndAt ? data.examEndAt.toDate() : undefined,
     };
   },
 };

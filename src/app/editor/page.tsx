@@ -24,8 +24,11 @@ export default function Page() {
   const [existingExam, setExistingExam] = useState<boolean>(false);
   const fetcher = (url: string) =>
     fetch(url).then(async (res) => {
-      const json = (await res.json()).reverse();
-      return json;
+      if (!res.ok) {
+        throw new Error('Failed to fetch');
+      }
+      const json = await res.json();
+      return Array.isArray(json) ? json.reverse() : [];
     });
   const {
     data: tableData,
@@ -39,10 +42,9 @@ export default function Page() {
   useEffect(() => {
     const checkExamExists = async () => {
       if (examId) {
-        const ereq = await fetch(
-          `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${examId}_elem.json?ignoreCache=1`
-        );
-        setExistingExam(ereq.status === 200);
+        // Check if exam exists in Firestore
+        const attrReq = await fetch(`/api/editor/attr?id=${examId}`);
+        setExistingExam(attrReq.status === 200);
       } else {
         setExistingExam(false);
       }
@@ -55,27 +57,30 @@ export default function Page() {
   };
 
   const onSubmit = async () => {
-    const ereq = await fetch(
-      `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${examId}_elem.json?ignoreCache=1`
-    );
-    if (ereq.status === 200) {
+    // Check if exam already exists in Firestore
+    const attrReq = await fetch(`/api/editor/attr?id=${examId}`);
+    if (attrReq.status === 200) {
       alert('既に使われている試験IDです。再編集する場合、既存の試験を編集ボタンを押してください。');
       //router.push(`/exam/${examId}`);
     } else {
       const res = await fetch('/api/editor/attr', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           id: examId,
           title: title,
           createdAt: new Date(),
           lastEditedAt: new Date(),
-          owner: session?.user?.name,
+          owner: session?.user?.name || '',
           status: '下書き',
-          elemRef: `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${examId}_save.json?ignoreCache=1`,
-          saveRef: `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${examId}_elem.json?ignoreCache=1`,
+          // Initially empty URLs - will be updated when content is saved
+          elemRef: '',
+          saveRef: '',
           timeLimit: 60,
-          examStartAt: new Date(),
-          examEndAt: new Date(),
+          examStartAt: null,
+          examEndAt: null,
         }),
       });
       if (res.status === 400) {
@@ -111,7 +116,12 @@ export default function Page() {
             既存の試験「{examId}」を編集
           </Button>
         )}
-        {!isLoading && <Examtable columns={columns} data={tableData} />}
+        {error && (
+          <div className="text-red-500">
+            試験リストの取得に失敗しました: {error.message}
+          </div>
+        )}
+        {!isLoading && !error && tableData && <Examtable columns={columns} data={tableData} />}
       </div>
     </div>
   );

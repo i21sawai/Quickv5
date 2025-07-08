@@ -1,3 +1,7 @@
+// このAPIルートは413 Payload Too Largeエラーを回避するため、
+// クライアントサイドから直接Firebase Storageにアップロードする方式に変更されました。
+// 以下のコードは参考のため残しています。
+
 //import { pipeline } from 'stream';
 //import { promisify } from 'util';
 import { NextRequest, NextResponse } from 'next/server';
@@ -5,6 +9,7 @@ import { bucket } from '@/database/storage';
 
 //const pump = promisify(pipeline);
 
+// DEPRECATED: このPUTメソッドは使用されなくなりました
 export async function PUT(req: NextRequest, res: NextResponse) {
   try {
     const formData = await req.formData();

@@ -65,30 +65,88 @@ export const EditorContextProvider = ({
     const f = async () => {
       if (id === 'editor') return;
       setReady(false);
-      const ereq = await fetch(
-        `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${id}_elem.json?ignoreCache=1`
-      );
-      if (ereq.status === 200) {
-        let elem = (await ereq.json()) as ElementSaveData;
-        if (page === 'exam') {
-          //delete answer
-          elem.elements = elem.elements.map((e: Element) => {
-            if (!e) return e;
-            e.answers = [];
-            return e;
-          });
-        }
-        setElemSave(elem);
-      }
+      
+      // First get the attribute data from Firestore
       const attrreq = await fetch(`/api/editor/attr?id=${id}`);
       if (attrreq.status === 200) {
-        const attr = await attrreq.json();
+        const attrData = await attrreq.json();
         //! DON'T FORGET TO CONVERT DATE STRING TO DATE OBJECT
-        attr.createdAt = new Date(attr.createdAt);
-        attr.lastEditedAt = new Date(attr.lastEditedAt);
-        attr.examStartAt = new Date(attr.examStartAt);
-        attr.examEndAt = new Date(attr.examEndAt);
-        setAttr(attr);
+        attrData.createdAt = new Date(attrData.createdAt);
+        attrData.lastEditedAt = new Date(attrData.lastEditedAt);
+        if (attrData.examStartAt) attrData.examStartAt = new Date(attrData.examStartAt);
+        if (attrData.examEndAt) attrData.examEndAt = new Date(attrData.examEndAt);
+        setAttr(attrData);
+        
+        // Use the elemRef URL from Firestore to fetch the element data
+        if (attrData.elemRef) {
+          // Extract path from the Storage URL
+          const storageUrl = attrData.elemRef;
+          let storagePath = '';
+          
+          if (storageUrl.includes('firebasestorage.app')) {
+            // Extract path after the bucket name
+            const match = storageUrl.match(/firebasestorage\.app\/(.+?)(?:\?|$)/);
+            if (match) {
+              storagePath = decodeURIComponent(match[1]);
+              // Remove the '/o/' prefix if present
+              if (storagePath.startsWith('o/')) {
+                storagePath = storagePath.substring(2);
+              }
+            }
+          } else if (storageUrl.includes('storage.googleapis.com')) {
+            // Extract path from Google Cloud Storage URL
+            const match = storageUrl.match(/storage\.googleapis\.com\/[^/]+\/(.+?)(?:\?|$)/);
+            if (match) {
+              storagePath = decodeURIComponent(match[1]);
+            }
+          }
+          
+          if (storagePath) {
+            const ereq = await fetch(`/api/storage/${storagePath}`);
+            if (ereq.status === 200) {
+              let elem = (await ereq.json()) as ElementSaveData;
+              if (page === 'exam') {
+                //delete answer
+                elem.elements = elem.elements.map((e: Element) => {
+                  if (!e) return e;
+                  e.answers = [];
+                  return e;
+                });
+              }
+              setElemSave(elem);
+            }
+          }
+        } else {
+          // Fallback: try to fetch from the old Google Cloud Storage location via API
+          const ereq = await fetch(`/api/storage/WebExam/editor/${id}_elem.json`);
+          if (ereq.status === 200) {
+            let elem = (await ereq.json()) as ElementSaveData;
+            if (page === 'exam') {
+              //delete answer
+              elem.elements = elem.elements.map((e: Element) => {
+                if (!e) return e;
+                e.answers = [];
+                return e;
+              });
+            }
+            setElemSave(elem);
+          }
+        }
+      } else {
+        // If no Firestore document exists, try the old Google Cloud Storage location via API
+        const ereq = await fetch(`/api/storage/WebExam/editor/${id}_elem.json`);
+        if (ereq.status === 200) {
+          let elem = (await ereq.json()) as ElementSaveData;
+          if (page === 'exam') {
+            //delete answer
+            elem.elements = elem.elements.map((e: Element) => {
+              if (!e) return e;
+              e.answers = [];
+              return e;
+            });
+          }
+          setElemSave(elem);
+        }
       }
 
       setReady(true);
@@ -103,6 +161,9 @@ export const EditorContextProvider = ({
     async function f() {
       await fetch(`/api/editor/attr`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(attr),
       });
     }

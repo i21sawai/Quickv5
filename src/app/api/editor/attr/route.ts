@@ -33,22 +33,30 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const json: ExamAttr = await req.json();
   try {
+    const data: any = {
+      id: json.id,
+      title: json.title,
+      createdAt: new Date(json.createdAt),
+      lastEditedAt: new Date(json.lastEditedAt),
+      owner: json.owner,
+      status: json.status,
+      elemRef: json.elemRef,
+      saveRef: json.saveRef,
+      timeLimit: json.timeLimit,
+    };
+    
+    // examStartAtとexamEndAtがnullでない場合のみ設定
+    if (json.examStartAt) {
+      data.examStartAt = new Date(json.examStartAt);
+    }
+    if (json.examEndAt) {
+      data.examEndAt = new Date(json.examEndAt);
+    }
+    
     await fs_e
       .withConverter(examAttrConverter)
       .doc(json.id)
-      .set({
-        id: json.id,
-        title: json.title,
-        createdAt: new Date(json.createdAt),
-        lastEditedAt: new Date(json.lastEditedAt),
-        owner: json.owner,
-        status: json.status,
-        elemRef: json.elemRef,
-        saveRef: json.saveRef,
-        timeLimit: json.timeLimit,
-        examStartAt: new Date(json.examStartAt),
-        examEndAt: new Date(json.examEndAt),
-      });
+      .set(data);
     return NextResponse.json({ status: 'success' });
   } catch (e) {
     console.log(e);

@@ -5,6 +5,7 @@ import {
 } from '@/database/converters/response';
 import { fs_e, fs_user } from '@/database/firestore';
 import { makeid } from '@/utils/str';
+import { getStorage } from 'firebase-admin/storage';
 
 import { ElementSaveData } from '@/types/element';
 import {
@@ -50,11 +51,61 @@ export async function POST(req: NextRequest, res: NextResponse) {
         .get()
     ).data();
 
-    const ereq = await fetch(
-      `https://storage.googleapis.com/${process.env.NEXT_PUBLIC_BUCKET_NAME}/WebExam%2Feditor%2F${res.examId}_elem.json?ignoreCache=1`
-    );
-    if (ereq.status !== 200) return;
-    let elem = (await ereq.json()) as ElementSaveData;
+    // Get exam attributes to find elemRef
+    const examDoc = await fs_e.doc(res.examId).get();
+    const examData = examDoc.data();
+    
+    let elem: ElementSaveData;
+    
+    // Try to use elemRef from Firestore first
+    if (examData?.elemRef) {
+      // Extract path from the Storage URL
+      const storageUrl = examData.elemRef;
+      let storagePath = '';
+      
+      if (storageUrl.includes('firebasestorage.app')) {
+        const match = storageUrl.match(/firebasestorage\.app\/(.+?)(?:\?|$)/);
+        if (match) {
+          storagePath = decodeURIComponent(match[1]);
+          // Remove the '/o/' prefix if present
+          if (storagePath.startsWith('o/')) {
+            storagePath = storagePath.substring(2);
+          }
+        }
+      } else if (storageUrl.includes('storage.googleapis.com')) {
+        const match = storageUrl.match(/storage\.googleapis\.com\/[^/]+\/(.+?)(?:\?|$)/);
+        if (match) {
+          storagePath = decodeURIComponent(match[1]);
+        }
+      }
+      
+      if (!storagePath) {
+        storagePath = `WebExam/editor/${res.examId}_elem.json`;
+      }
+      
+      try {
+        const storage = getStorage();
+        const bucket = storage.bucket();
+        const file = bucket.file(storagePath);
+        const [contents] = await file.download();
+        elem = JSON.parse(contents.toString()) as ElementSaveData;
+      } catch (error) {
+        console.error(`Failed to fetch exam elements for ${res.examId}:`, error);
+        return NextResponse.json({ status: 500, error: 'Failed to fetch exam elements' });
+      }
+    } else {
+      // Fallback to default location
+      try {
+        const storage = getStorage();
+        const bucket = storage.bucket();
+        const file = bucket.file(`WebExam/editor/${res.examId}_elem.json`);
+        const [contents] = await file.download();
+        elem = JSON.parse(contents.toString()) as ElementSaveData;
+      } catch (error) {
+        console.error(`Failed to fetch exam elements for ${res.examId}:`, error);
+        return NextResponse.json({ status: 500, error: 'Failed to fetch exam elements' });
+      }
+    }
     let correctAnswers = elem.elements.map((e) => {
       return {
         id: e.id,
