@@ -61,7 +61,7 @@ export default function IndexPage() {
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label>試験開始時間</Label>
               <DateTimePicker
-                date={attr.examStartAt}
+                date={attr.examStartAt || new Date()}
                 setDate={(date) =>
                   setAttr({
                     ...attr,
@@ -82,7 +82,7 @@ export default function IndexPage() {
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label>試験終了時間</Label>
               <DateTimePicker
-                date={attr.examEndAt}
+                date={attr.examEndAt || new Date()}
                 setDate={(date) =>
                   //the seconds part should be zero
                   setAttr({

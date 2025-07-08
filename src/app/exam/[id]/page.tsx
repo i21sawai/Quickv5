@@ -96,7 +96,9 @@ export default function IndexPage() {
     if (!attr) return;
     setStatus('RESPONDING');
 
-    const _deadline = new Date(Date.now() + (attr?.timeLimit || 60) * 60 * 1000);
+    const _deadline = new Date(
+      Date.now() + (attr?.timeLimit || 60) * 60 * 1000
+    );
     setDeadline(_deadline);
     const timer = setInterval(() => {
       const now = new Date();
@@ -127,9 +129,9 @@ export default function IndexPage() {
   useEffect(() => {
     const timer = setInterval(() => {
       if (!attr) return;
-      if (attr.examStartAt > new Date()) {
+      if (attr.examStartAt && attr.examStartAt > new Date()) {
         setAcceptStatus('EARLY');
-      } else if (attr.examEndAt < new Date()) {
+      } else if (attr.examEndAt && attr.examEndAt < new Date()) {
         setAcceptStatus('LATE');
       } else {
         setAcceptStatus('ACCEPTING');
@@ -146,9 +148,13 @@ export default function IndexPage() {
           <h1 className="text-3xl font-extrabold leading-tight tracking-tighter md:text-4xl">
             {/* 現在回答を受け付けていません。試験官にお問い合わせください。 */}
             {acceptStatus === 'EARLY'
-              ? `試験開始は${formatTime(attr.examStartAt)}です`
+              ? attr.examStartAt
+                ? `試験開始は${formatTime(attr.examStartAt)}です`
+                : '試験開始時間が設定されていません'
               : acceptStatus === 'LATE'
-                ? `試験は${formatTime(attr.examEndAt)}に終了しています`
+                ? attr.examEndAt
+                  ? `試験は${formatTime(attr.examEndAt)}に終了しています`
+                  : '試験終了時間が設定されていません'
                 : '受付状況読み込み中...'}
           </h1>
           <Button asChild>
@@ -165,7 +171,9 @@ export default function IndexPage() {
             {`${attr?.title}が開始できます`}
           </h1>
           <p className="max-w-[700px] text-lg text-muted-foreground">
-            制限時間は{attr?.timeLimit}分です。試験終了時間は{formatTime(attr?.examEndAt)}です。
+            制限時間は{attr?.timeLimit}分です。
+            {attr?.examEndAt &&
+              `試験終了時間は${formatTime(attr.examEndAt)}です。`}
           </p>
         </div>
         <Button onClick={() => onStartExam()}>回答を開始する</Button>
