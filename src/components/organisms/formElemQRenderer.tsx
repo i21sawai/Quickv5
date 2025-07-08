@@ -23,14 +23,20 @@ export const FormElemQRenderer = ({
   _element: Element;
   _setElement: (e: Element) => void;
 }) => {
-  const [element, setElement] = useState(_element);
+  const [element, setElement] = useState(() => {
+    // Initialize with empty answers if in exam mode (not readonly)
+    if (!_element.readonly && _element.answers.length === 0) {
+      return _element;
+    }
+    return _element;
+  });
 
   switch (element.type) {
     case 'text':
       return (
         <div className="flex flex-col gap-4">
           <Input
-            value={element.answers[0] as string}
+            value={(element.answers[0] as string) || ''}
             onChange={(e) => {
               setElement({ ...element, answers: [e.target.value] });
               _setElement({ ...element, answers: [e.target.value] });
@@ -53,7 +59,7 @@ export const FormElemQRenderer = ({
       return (
         <div className="flex flex-col gap-4">
           <Textarea
-            value={element.answers[0] as string}
+            value={(element.answers[0] as string) || ''}
             onChange={(e) => {
               setElement({ ...element, answers: [e.target.value] });
               _setElement({ ...element, answers: [e.target.value] });
@@ -75,7 +81,7 @@ export const FormElemQRenderer = ({
     case 'radio':
       return (
         <RadioGroup
-          value={`${element.answers[0]}` as string}
+          value={element.answers.length > 0 && element.answers[0] !== -1 ? `${element.answers[0]}` : ''}
           onValueChange={(value) => {
             setElement({ ...element, answers: [parseInt(value)] });
             _setElement({ ...element, answers: [parseInt(value)] });
@@ -123,7 +129,11 @@ export const FormElemQRenderer = ({
                 <TableCell colSpan={element.options.length}>
                   <RadioGroup
                     value={
-                      `${(element.answers as number[][])[i] ? (element.answers as number[][])[i][0] || 0 : 0}` as string
+                      (element.answers as number[][])[i] && 
+                      (element.answers as number[][])[i][0] && 
+                      (element.answers as number[][])[i][0] !== -1 
+                        ? `${(element.answers as number[][])[i][0]}` 
+                        : ''
                     }
                     onValueChange={(value: any) => {
                       const _answers = element.answers as number[][];
