@@ -15,6 +15,7 @@ import { FormRenderer } from '@/components/organisms/formRenderer';
 export default function IndexPage() {
   const { elemSave, setElemSave, ready, id, attr } = useEditorContext();
   const [newElemSave, setNewElemSave] = useState<ElementSaveData | undefined>();
+  const [isInitialized, setIsInitialized] = useState(false);
   const [status, setStatus] = useState<'WAITING' | 'RESPONDING' | 'FINISHED'>(
     'WAITING'
   );
@@ -28,8 +29,23 @@ export default function IndexPage() {
   const [timeNotice, setTimeNotice] = useState<string>('読み込み中...');
 
   useEffect(() => {
-    if (!elemSave || newElemSave) return;
-    setNewElemSave({ ...elemSave });
+    if (!elemSave) return;
+    
+    // elemSaveのディープコピーを作成し、answersを確実に初期化
+    const initializedElemSave: ElementSaveData = {
+      ...elemSave,
+      elements: elemSave.elements.map(elem => ({
+        ...elem,
+        answers: elem.type === 'text' || elem.type === 'paragraph' 
+          ? [] 
+          : elem.type === 'radio' 
+          ? [] 
+          : Array(elem.questions?.length || 0).fill([])
+      }))
+    };
+    setNewElemSave(initializedElemSave);
+    // 初期化完了を通知
+    setIsInitialized(true);
   }, [elemSave]);
 
   const response = useMemo(() => {
@@ -93,7 +109,22 @@ export default function IndexPage() {
   };
 
   const onStartExam = () => {
-    if (!attr) return;
+    if (!attr || !elemSave) return;
+    
+    // 初期化処理を再実行
+    const initializedElemSave: ElementSaveData = {
+      ...elemSave,
+      elements: elemSave.elements.map(elem => ({
+        ...elem,
+        answers: elem.type === 'text' || elem.type === 'paragraph' 
+          ? [] 
+          : elem.type === 'radio' 
+          ? [] 
+          : Array(elem.questions?.length || 0).fill([])
+      }))
+    };
+    setNewElemSave(initializedElemSave);
+    setIsInitialized(true);
     setStatus('RESPONDING');
 
     const _deadline = new Date(
@@ -181,6 +212,21 @@ export default function IndexPage() {
     );
   }
 
+  // 初期化中の表示（試験開始後のみ）
+  if (status === 'RESPONDING' && (!isInitialized || !newElemSave)) {
+    return (
+      <section className="container grid items-center gap-6 pb-8 pt-6 md:py-10">
+        <div className="flex w-full min-w-0 max-w-full justify-center">
+          <div className="w-full max-w-screen-md p-0 md:p-8">
+            <div className="flex h-[400px] items-center justify-center">
+              <p className="text-lg text-muted-foreground">問題を読み込んでいます...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="container grid items-center gap-6 pb-8 pt-6 md:py-10">
       <div className="flex max-w-[980px] flex-col items-start gap-2"></div>
@@ -190,7 +236,7 @@ export default function IndexPage() {
           <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight pb-8">
             {timeNotice}
           </h3>
-          <FormRenderer elemSave={elemSave} setElemSave={setNewElemSave} />
+          <FormRenderer elemSave={newElemSave} setElemSave={setNewElemSave} />
           <div className="flex h-[120px] items-end justify-end ">
             <Button variant="default" onClick={submit}>
               提出
