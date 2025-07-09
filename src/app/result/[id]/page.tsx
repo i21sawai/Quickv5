@@ -57,7 +57,9 @@ export default function Result() {
   const summarizeRadio = (correct: number[], data: number[][]) => {
     let result: [{ option: string; count: number; fill: string }] = [] as any;
     data.forEach((answers) => {
+      if (!answers || answers.length === 0) return;
       const a = answers[0];
+      if (a === undefined || a === null) return;
       const index = result.findIndex((r) => r.option === a.toString());
       if (index !== -1) {
         result[index].count++;
@@ -181,13 +183,20 @@ export default function Result() {
         return;
       }
       
+      if (!answer.correctAnswers || answer.correctAnswers.length === 0) {
+        console.error('No correct answers found for question: ', id);
+        return;
+      }
+      
       let average = 0;
       switch (question.type) {
         case 'radio':
           let correct = answer.correctAnswers[0];
+          if (correct === undefined || correct === null) break;
           answer.answersList.forEach((answers, i) => {
+            if (!answers || answers.length === 0) return;
             let a = answers[0];
-            if (a.toString() === correct.toString()) {
+            if (a !== undefined && a !== null && a.toString() === correct.toString()) {
               result.pointDist[i] += question.point;
               average += question.point;
             }
@@ -195,9 +204,11 @@ export default function Result() {
           break;
         case 'matrix':
           answer.correctAnswers.forEach((correct, i) => {
+            if (correct === undefined || correct === null) return;
             answer.answersList.forEach((answers, j) => {
+              if (!answers || answers.length <= i) return;
               let a = answers[i];
-              if (a.toString() === correct.toString()) {
+              if (a !== undefined && a !== null && a.toString() === correct.toString()) {
                 result.pointDist[j] +=
                   question.point / answer.correctAnswers.length;
                 average += question.point / answer.correctAnswers.length;
@@ -208,7 +219,9 @@ export default function Result() {
         case 'text':
         case 'paragraph':
           answer.correctAnswers.forEach((correct, i) => {
+            if (correct === undefined || correct === null) return;
             answer.answersList.forEach((answers, j) => {
+              if (!answers || answers.length <= i) return;
               let a = answers[i];
               if (a === correct) {
                 result.pointDist[j] += question.point;
@@ -366,11 +379,11 @@ export default function Result() {
     let count = 1;
     //Making header
     for (let answer of data.data.answersList) {
-      console.log(
-        answer.correctAnswers,
-        isNaN((answer.correctAnswers as number[][])[0][0])
-      );
-      if (isNaN((answer.correctAnswers as number[][])[0][0])) {
+      const isMatrix = Array.isArray(answer.correctAnswers) && 
+                       answer.correctAnswers.length > 0 && 
+                       Array.isArray(answer.correctAnswers[0]);
+      console.log(answer.correctAnswers, isMatrix);
+      if (!isMatrix) {
         res += count++ + '.' + answer.title + ',';
       } else {
         for (let i = 0; i < answer.correctAnswers.length; i++) {
@@ -389,12 +402,17 @@ export default function Result() {
       res += dateStr + ',';
       res += data.data.responseIdList[i] + ',';
       for (let answer of data.data.answersList) {
-        if (isNaN((answer.correctAnswers as number[][])[0][0])) {
-          res += answer.answersList[i][0] + ',';
+        const isMatrix = Array.isArray(answer.correctAnswers) && 
+                         answer.correctAnswers.length > 0 && 
+                         Array.isArray(answer.correctAnswers[0]);
+        if (!isMatrix) {
+          const value = answer.answersList?.[i]?.[0];
+          res += (value !== undefined && value !== null ? value : '') + ',';
         } else {
           //asserting cast to avoid error
           for (let j = 0; j < answer.correctAnswers.length; j++) {
-            res += (answer.answersList as [number[][]])[i][j][0] + ',';
+            const value = (answer.answersList?.[i] as any)?.[j]?.[0];
+            res += (value !== undefined && value !== null ? value : '') + ',';
           }
         }
       }
