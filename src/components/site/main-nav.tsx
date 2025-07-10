@@ -29,7 +29,7 @@ export function MainNav({ items }: MainNavProps) {
               return data?.user?.email &&
                 JSON.parse(data?.user?.email).role === '管理者'
                 ? true
-                : i.title !== '作成';
+                : i.title !== '作成' && i.title !== '使い方ガイド';
             })
             .map(
               (item, index) =>
