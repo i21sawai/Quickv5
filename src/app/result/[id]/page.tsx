@@ -374,8 +374,8 @@ export default function Result() {
     URL.revokeObjectURL(url);
   };
   const onDownloadResultAsCSV = () => {
-    if (!data?.data?.answersList || !data?.data?.userIdList) return;
-    let res = 'ユーザーID,提出日時,提出ID,';
+    if (!data?.data?.answersList || !data?.data?.userIdList || !overviewData) return;
+    let res = 'ユーザーID,合計点数,提出日時,提出ID,';
     let count = 1;
     //Making header
     for (let answer of data.data.answersList) {
@@ -395,6 +395,7 @@ export default function Result() {
     res += '\n';
     for (let i = 0; i < data.data.userIdList.length; i++) {
       res += data.data.userIdList[i] + ',';
+      res += overviewData.pointDist[i] + ',';
       //convert to local time string
       let dateStr = new Date(data.data.submissionTimeList[i]).toLocaleString();
       //escape
